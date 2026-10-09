@@ -14,6 +14,8 @@ THRESHOLD_FILE = os.path.join(RESULTS_DIR, "threshold_comparison_per_patient_val
 
 METRICS = ["Dice", "F1"]
 SINGLE_INPUT_IDS = list(range(709, 717))
+LOO_IDS = list(range(700, 708))
+GROUND_TRUTH_ID = 708
 THRESHOLD_ORDER = ["all", "0.3cm", "0.5cm"]
 
 
@@ -168,6 +170,100 @@ def run_paired_analysis(data, conditions, condition_column, analysis_name):
     )
 
 
+def run_loo_comparisons(longi):
+    comparison_rows = []
+    difference_rows = []
+
+    for metric in METRICS:
+        selected = longi[longi["dataset_id"].isin([GROUND_TRUTH_ID, *LOO_IDS])].copy()
+        selected[metric] = pd.to_numeric(selected[metric], errors="coerce")
+        selected = selected.dropna(subset=["case_id", "dataset_id", metric])
+        wide = selected.pivot_table(
+            index="case_id",
+            columns="dataset_id",
+            values=metric,
+            aggfunc="first",
+        ).reindex(columns=[GROUND_TRUTH_ID, *LOO_IDS])
+        for loo_id in LOO_IDS:
+            paired = wide[[GROUND_TRUTH_ID, loo_id]].dropna()
+            ground_truth_values = paired[GROUND_TRUTH_ID].to_numpy()
+            loo_values = paired[loo_id].to_numpy()
+            comparison_rows.append({
+                "analysis": "loo_vs_all_together",
+                "metric": metric,
+                "condition_1": f"Dataset_{GROUND_TRUTH_ID}",
+                "condition_2": f"Dataset_{loo_id}",
+                "n_complete_patients": len(paired),
+                "test_used": "paired_wilcoxon" if len(paired) >= 2 else "not tested",
+                "p_value": paired_wilcoxon(ground_truth_values, loo_values)
+                if len(paired) >= 2 else np.nan,
+                "rank_biserial_effect": paired_rank_biserial(
+                    ground_truth_values, loo_values
+                ) if len(paired) >= 2 else np.nan,
+            })
+
+            difference = paired[loo_id] - paired[GROUND_TRUTH_ID]
+            for case_id, value in difference.items():
+                difference_rows.append({
+                    "case_id": case_id,
+                    "dataset_id": loo_id,
+                    "condition": f"Dataset_{loo_id}",
+                    f"{metric}_diff": value,
+                })
+
+    comparison_tests = pd.DataFrame(comparison_rows)
+    if not comparison_tests.empty:
+        comparison_tests["holm_p_value"] = np.nan
+        for _, indices in comparison_tests.groupby("metric").groups.items():
+            comparison_tests.loc[indices, "holm_p_value"] = holm_adjust(
+                comparison_tests.loc[indices, "p_value"].to_numpy()
+            )
+        comparison_tests["significance"] = comparison_tests["holm_p_value"].map(
+            significance_label
+        )
+
+    differences = pd.DataFrame(difference_rows)
+    if not differences.empty:
+        differences = differences.groupby(
+            ["case_id", "dataset_id", "condition"], as_index=False
+        ).first()
+
+    zero_rows = []
+    for metric in METRICS:
+        difference_column = f"{metric}_diff"
+        for loo_id in LOO_IDS:
+            values = pd.to_numeric(
+                differences.loc[
+                    differences["dataset_id"] == loo_id,
+                    difference_column,
+                ],
+                errors="coerce",
+            ).dropna().to_numpy()
+            zero_rows.append({
+                "analysis": "loo_difference_vs_zero",
+                "metric": metric,
+                "condition": f"Dataset_{loo_id}",
+                "n_patients": len(values),
+                "test_used": "one_sample_wilcoxon" if len(values) >= 2 else "not tested",
+                "p_value": paired_wilcoxon(values, np.zeros(len(values)))
+                if len(values) >= 2 else np.nan,
+                "rank_biserial_effect": paired_rank_biserial(
+                    values, np.zeros(len(values))
+                ) if len(values) >= 2 else np.nan,
+            })
+
+    zero_tests = pd.DataFrame(zero_rows)
+    if not zero_tests.empty:
+        zero_tests["holm_p_value"] = np.nan
+        for _, indices in zero_tests.groupby("metric").groups.items():
+            zero_tests.loc[indices, "holm_p_value"] = holm_adjust(
+                zero_tests.loc[indices, "p_value"].to_numpy()
+            )
+        zero_tests["significance"] = zero_tests["holm_p_value"].map(significance_label)
+
+    return comparison_tests, differences, zero_tests
+
+
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -184,6 +280,7 @@ def main():
         "condition",
         "single_input_models_709_716",
     )
+    loo_comparisons, loo_differences, loo_zero_tests = run_loo_comparisons(longi)
 
     # Threshold analysis is currently disabled.
     # threshold = pd.read_csv(THRESHOLD_FILE)
@@ -211,6 +308,18 @@ def main():
     single_omnibus.to_csv(os.path.join(OUTPUT_DIR, "single_input_omnibus_tests.csv"), index=False)
     single_pairwise.to_csv(os.path.join(OUTPUT_DIR, "single_input_pairwise_tests.csv"), index=False)
     single_normality.to_csv(os.path.join(OUTPUT_DIR, "single_input_normality.csv"), index=False)
+    loo_comparisons.to_csv(
+        os.path.join(OUTPUT_DIR, "loo_vs_all_together_pairwise_tests.csv"),
+        index=False,
+    )
+    loo_differences.to_csv(
+        os.path.join(OUTPUT_DIR, "loo_patient_level_differences.csv"),
+        index=False,
+    )
+    loo_zero_tests.to_csv(
+        os.path.join(OUTPUT_DIR, "loo_differences_vs_zero_tests.csv"),
+        index=False,
+    )
     # threshold_omnibus.to_csv(os.path.join(OUTPUT_DIR, "threshold_omnibus_tests.csv"), index=False)
     # threshold_pairwise.to_csv(os.path.join(OUTPUT_DIR, "threshold_pairwise_tests.csv"), index=False)
     # threshold_normality.to_csv(os.path.join(OUTPUT_DIR, "threshold_normality.csv"), index=False)
