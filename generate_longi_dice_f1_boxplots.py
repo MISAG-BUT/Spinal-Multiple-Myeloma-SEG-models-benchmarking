@@ -697,12 +697,12 @@ def save_iou_threshold_f1_plot():
     output_path = os.path.join(output_dir, "iou_threshold_f1_plot.png")
 
     model_labels = {
-        "Dataset708_MM_Lesion_seg_all_together": "All together (708)",
-        "Dataset709_MM_Lesion_seg_just_ConvCT": "ConvCT (709)",
-        "Dataset710_MM_Lesion_seg_just_VMI_40": "VMI40 (710)",
-        "Dataset713_MM_Lesion_seg_just_CaSupp_25": "CaSupp25 (713)",
-        "Dataset717_MM_Lesion_seg_all_VMI": "All VMI (717)",
-        "Dataset718_MM_Lesion_seg_all_CaSupp": "All CaSupp (718)",
+        "Dataset708_MM_Lesion_seg_all_together": "All together",
+        "Dataset709_MM_Lesion_seg_just_ConvCT": "ConvCT",
+        "Dataset710_MM_Lesion_seg_just_VMI_40": "VMI40",
+        "Dataset713_MM_Lesion_seg_just_CaSupp_25": "CaSupp25",
+        "Dataset717_MM_Lesion_seg_all_VMI": "All VMI",
+        "Dataset718_MM_Lesion_seg_all_CaSupp": "All CaSupp",
     }
     model_colors = {
         "Dataset709_MM_Lesion_seg_just_ConvCT": "#1f77b4",
