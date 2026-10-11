@@ -173,6 +173,7 @@ def run_paired_analysis(data, conditions, condition_column, analysis_name):
 def run_loo_comparisons(longi):
     comparison_rows = []
     difference_rows = []
+    normality_rows = []
 
     for metric in METRICS:
         selected = longi[longi["dataset_id"].isin([GROUND_TRUTH_ID, *LOO_IDS])].copy()
@@ -188,6 +189,23 @@ def run_loo_comparisons(longi):
             paired = wide[[GROUND_TRUTH_ID, loo_id]].dropna()
             ground_truth_values = paired[GROUND_TRUTH_ID].to_numpy()
             loo_values = paired[loo_id].to_numpy()
+            paired_differences = loo_values - ground_truth_values
+            normality_p = shapiro_p_value(paired_differences)
+            normality_rows.append({
+                "analysis": "loo_paired_differences",
+                "metric": metric,
+                "condition": f"Dataset_{loo_id}",
+                "difference": f"Dataset_{loo_id} - Dataset_{GROUND_TRUTH_ID}",
+                "n_patients": len(paired_differences),
+                "normality_test": "shapiro_wilk",
+                "alpha": 0.05,
+                "shapiro_p_value": normality_p,
+                "normality_assessment": (
+                    "not_rejected_at_0.05" if pd.notna(normality_p) and normality_p >= 0.05
+                    else "rejected_at_0.05" if pd.notna(normality_p)
+                    else "not_tested"
+                ),
+            })
             comparison_rows.append({
                 "analysis": "loo_vs_all_together",
                 "metric": metric,
@@ -261,7 +279,7 @@ def run_loo_comparisons(longi):
             )
         zero_tests["significance"] = zero_tests["holm_p_value"].map(significance_label)
 
-    return comparison_tests, differences, zero_tests
+    return comparison_tests, differences, zero_tests, pd.DataFrame(normality_rows)
 
 
 def main():
@@ -280,7 +298,7 @@ def main():
         "condition",
         "single_input_models_709_716",
     )
-    loo_comparisons, loo_differences, loo_zero_tests = run_loo_comparisons(longi)
+    loo_comparisons, loo_differences, loo_zero_tests, loo_normality = run_loo_comparisons(longi)
 
     # Threshold analysis is currently disabled.
     # threshold = pd.read_csv(THRESHOLD_FILE)
@@ -318,6 +336,10 @@ def main():
     )
     loo_zero_tests.to_csv(
         os.path.join(OUTPUT_DIR, "loo_differences_vs_zero_tests.csv"),
+        index=False,
+    )
+    loo_normality.to_csv(
+        os.path.join(OUTPUT_DIR, "loo_normality_tests.csv"),
         index=False,
     )
     # threshold_omnibus.to_csv(os.path.join(OUTPUT_DIR, "threshold_omnibus_tests.csv"), index=False)

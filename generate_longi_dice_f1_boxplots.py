@@ -29,6 +29,20 @@ LOO_ZERO_STATISTICS_FILE = os.path.join(
     "statistical_analysis",
     "loo_differences_vs_zero_tests.csv",
 )
+THRESHOLD_ANALYSES = {
+    "all": "longi_summary_all",
+    "0.3cm": "longi_summary_larger_than_0_3_cubic_cm",
+    "0.5cm": "longi_summary_larger_than_0_5_cubic_cm",
+}
+THRESHOLD_MODELS = {
+    "ConvCT": "Dataset709_MM_Lesion_seg_just_ConvCT",
+    "VMI40": "Dataset710_MM_Lesion_seg_just_VMI_40",
+    "CaSupp25": "Dataset713_MM_Lesion_seg_just_CaSupp_25",
+    "All together": "Dataset708_MM_Lesion_seg_all_together",
+    "All VMI": "Dataset717_MM_Lesion_seg_all_VMI",
+    "All CaSupp": "Dataset718_MM_Lesion_seg_all_CaSupp",
+}
+THRESHOLD_ORDER = ["all", "0.3cm", "0.5cm"]
 
 MODEL_IDS = list(range(700, 719))
 GROUP_COLORS = {
@@ -134,6 +148,40 @@ def load_patient_rows():
     return pd.DataFrame(rows)
 
 
+def load_threshold_patient_rows():
+    rows = []
+    for threshold, analysis_name in THRESHOLD_ANALYSES.items():
+        for model_label, model_name in THRESHOLD_MODELS.items():
+            model_dir = os.path.join(ROOT, "full_models", analysis_name, model_name)
+            if not os.path.isdir(model_dir):
+                continue
+            json_pattern = os.path.join(model_dir, f"*{analysis_name}*.json")
+            for json_file in sorted(glob.glob(json_pattern)):
+                if "ALL_FOLDS" in os.path.basename(json_file):
+                    continue
+                with open(json_file) as file_handle:
+                    data = json.load(file_handle)
+
+                for item in data.get("metric_per_case", []):
+                    case_metrics = item.get("metrics")
+                    if not isinstance(case_metrics, dict):
+                        continue
+                    metric_entry = next(iter(case_metrics.values()), None)
+                    if not isinstance(metric_entry, dict):
+                        continue
+                    rows.append({
+                        "threshold": threshold,
+                        "model_label": model_label,
+                        "case_id": extract_case_id(item),
+                        "Dice": metric_entry.get("Dice"),
+                        "F1": metric_entry.get("F1"),
+                    })
+
+    if not rows:
+        raise FileNotFoundError("No patient-level threshold data found for the six selected models")
+    return pd.DataFrame(rows)
+
+
 def adjust_color(color, factor):
     """Blend a color with white (factor > 1) or black (factor < 1)."""
     red, green, blue = to_rgb(color)
@@ -143,14 +191,14 @@ def adjust_color(color, factor):
     return tuple(channel * factor for channel in (red, green, blue))
 
 
-def draw_boxplot(ax, values, position, color, rng):
+def draw_boxplot(ax, values, position, color, rng, width=0.34, alpha=1.0, hatch=None):
     values = pd.to_numeric(values, errors="coerce").dropna().tolist()
     if not values:
         return
     box = ax.boxplot(
         values,
         positions=[position],
-        widths=0.34,
+        widths=width,
         patch_artist=True,
         showfliers=False,
         manage_ticks=False,
@@ -159,6 +207,9 @@ def draw_boxplot(ax, values, position, color, rng):
         artist.set_facecolor(color)
         artist.set_edgecolor("black")
         artist.set_linewidth(1.2)
+        artist.set_alpha(alpha)
+        if hatch:
+            artist.set_hatch(hatch)
     for artist in box["whiskers"] + box["caps"] + box["medians"]:
         artist.set_color("black")
         artist.set_linewidth(1.2)
@@ -171,7 +222,8 @@ def draw_boxplot(ax, values, position, color, rng):
         zorder=4,
         linewidths=1.8,
     )
-    jitter = rng.uniform(-0.10, 0.10, size=len(values))
+    jitter_width = min(0.10, width * 0.35)
+    jitter = rng.uniform(-jitter_width, jitter_width, size=len(values))
     ax.scatter(
         np.full(len(values), position) + jitter,
         values,
@@ -252,7 +304,7 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
     return y_start + (len(intervals_by_level) - 1) * level_spacing + bracket_height + 0.025
 
 
-def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None):
+def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y_limits=None):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     figure, axis = plt.subplots(figsize=(15, 6))
     rng = np.random.default_rng(42)
@@ -273,7 +325,7 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None):
     axis.set_xticklabels([DATASET_LABELS[dataset_id] for dataset_id in model_ids], rotation=45, ha="right", fontsize=10)
     axis.tick_params(axis="y", labelsize=11)
     axis.set_xlim(-0.65, len(model_ids) - 0.35)
-    axis.set_ylim(-0.02, 1.02)
+    axis.set_ylim(*(y_limits or (-0.02, 1.02)))
     axis.grid(axis="y", linestyle="--", alpha=0.3)
 
     if significance is not None:
@@ -419,6 +471,107 @@ def save_loo_difference_plot(df, zero_tests=None):
     print(f"Saved: {output_path}")
 
 
+def save_lesion_size_threshold_plot(df):
+    model_order = list(THRESHOLD_MODELS)
+    threshold_colors = {
+        "all": "#1f77b4",
+        "0.3cm": "#ff7f0e",
+        "0.5cm": "#2ca02c",
+    }
+    threshold_labels = {
+        "all": "0 cm$^3$ (all lesions)",
+        "0.3cm": "0.3 cm$^3$",
+        "0.5cm": "0.5 cm$^3$",
+    }
+    model_spacing = 1.45
+    threshold_offsets = (-0.13, 0.0, 0.13)
+    metric_offsets = {"Dice": -0.25, "F1": 0.25}
+    figure, axis = plt.subplots(figsize=(18, 7))
+    rng = np.random.default_rng(42)
+
+    for model_index, model_label in enumerate(model_order):
+        model_center = model_index * model_spacing
+        model_data = df[df["model_label"] == model_label]
+
+        for metric, metric_offset in metric_offsets.items():
+            for threshold_index, threshold in enumerate(THRESHOLD_ORDER):
+                subset = model_data[model_data["threshold"] == threshold]
+                values = pd.to_numeric(subset[metric], errors="coerce").dropna()
+                if values.empty:
+                    continue
+
+                draw_boxplot(
+                    axis,
+                    values,
+                    model_center + metric_offset + threshold_offsets[threshold_index],
+                    threshold_colors[threshold],
+                    rng,
+                    width=0.09,
+                    alpha=0.95 if metric == "Dice" else 0.5,
+                    hatch="//" if metric == "F1" else None,
+                )
+
+        axis.axvline(model_center, color="gray", linestyle=":", linewidth=0.8, alpha=0.65)
+        for metric, metric_offset in metric_offsets.items():
+            axis.text(
+                model_center + metric_offset,
+                1.035,
+                metric,
+                ha="center",
+                va="bottom",
+                fontsize=10,
+                fontweight="bold",
+            )
+
+    model_centers = [index * model_spacing for index in range(len(model_order))]
+    axis.set_xticks(model_centers)
+    axis.set_xticklabels(
+        [label.replace(" (", "\n(") for label in model_order],
+        fontsize=9,
+    )
+    axis.set_xlabel("Model", fontsize=12)
+    axis.set_ylabel("Dice / F1", fontsize=12)
+    axis.set_title("Dice and F1 by lesion-size threshold", fontsize=14)
+    axis.set_xlim(model_centers[0] - 0.62, model_centers[-1] + 0.62)
+    axis.set_ylim(0.2, 1.08)
+    axis.grid(axis="y", linestyle="--", alpha=0.3)
+    axis.tick_params(axis="y", labelsize=10)
+
+    threshold_handles = [
+        Patch(facecolor=threshold_colors[threshold], edgecolor="black", label=threshold_labels[threshold])
+        for threshold in THRESHOLD_ORDER
+    ]
+    threshold_legend = figure.legend(
+        handles=threshold_handles,
+        title="Lesion-size\nthreshold",
+        loc="upper left",
+        bbox_to_anchor=(0.645, 0.94),
+        frameon=False,
+        fontsize=9,
+        title_fontsize=9,
+    )
+    threshold_legend.set_alignment("left")
+    metric_handles = [
+        Patch(facecolor="#999999", edgecolor="black", label="Dice"),
+        Patch(facecolor="#999999", edgecolor="black", hatch="//", label="F1"),
+    ]
+    figure.legend(
+        handles=metric_handles,
+        title="Metric",
+        loc="upper left",
+        bbox_to_anchor=(0.645, 0.55),
+        frameon=False,
+        fontsize=9,
+        title_fontsize=9,
+    )
+
+    axis.set_position([0.08, 0.16, 0.56, 0.76])
+    output_path = os.path.join(OUTPUT_DIR, "lesion_size_thresholds_Dice_F1_boxplot.png")
+    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    plt.close(figure)
+    print(f"Saved: {output_path}")
+
+
 def main():
     patient_df = load_patient_rows()
     significance = load_significance_results()
@@ -443,8 +596,11 @@ def main():
         patient_df,
         [708, 717, 718],
         "grouped_708_717_718_Dice_F1_boxplot.png",
+        y_limits=(0.4, 1.0),
     )
     save_loo_difference_plot(patient_df, loo_zero_tests)
+    threshold_df = load_threshold_patient_rows()
+    save_lesion_size_threshold_plot(threshold_df)
 
 
 if __name__ == "__main__":
