@@ -6,6 +6,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from matplotlib.colors import to_rgb
 from matplotlib.legend_handler import HandlerTuple
 from matplotlib.patches import Patch
@@ -43,6 +44,17 @@ THRESHOLD_MODELS = {
     "All CaSupp": "Dataset718_MM_Lesion_seg_all_CaSupp",
 }
 THRESHOLD_ORDER = ["all", "0.3cm", "0.5cm"]
+BASE_MODELS = {
+    "Dataset708": "Dataset708_MM_Lesion_seg_all_together",
+    "Dataset717": "Dataset717_MM_Lesion_seg_all_VMI",
+    "Dataset718": "Dataset718_MM_Lesion_seg_all_CaSupp",
+}
+IOU_F1_SUMMARY_FILE = os.path.join(
+    ROOT,
+    "iou_threshold_analysis_full_models",
+    ANALYSIS,
+    "iou_threshold_f1_summary.csv",
+)
 
 MODEL_IDS = list(range(700, 719))
 GROUP_COLORS = {
@@ -180,6 +192,102 @@ def load_threshold_patient_rows():
     if not rows:
         raise FileNotFoundError("No patient-level threshold data found for the six selected models")
     return pd.DataFrame(rows)
+
+
+def load_model_results(base_dir, analysis_name, model_type):
+    rows = []
+    if not os.path.isdir(base_dir):
+        return rows
+    for model in sorted(os.listdir(base_dir)):
+        model_dir = os.path.join(base_dir, model)
+        if not os.path.isdir(model_dir):
+            continue
+        for fold in range(5):
+            json_file = os.path.join(model_dir, f"{analysis_name}_fold_{fold}.json")
+            if not os.path.exists(json_file):
+                continue
+            with open(json_file) as file_handle:
+                data = json.load(file_handle)
+            foreground_mean = data.get("foreground_mean", {})
+            rows.append({
+                "model_type": model_type,
+                "model_name": model,
+                "fold": fold,
+                "Dice": foreground_mean.get("Dice"),
+                "F1": foreground_mean.get("F1"),
+                "NSD": foreground_mean.get("NSD"),
+            })
+    return rows
+
+
+def compute_feature_importance(analysis_name):
+    full_dir = os.path.join(ROOT, "full_models", analysis_name)
+    zero_dir = os.path.join(ROOT, "zero_input_models", analysis_name)
+    rows = []
+    rows.extend(load_model_results(full_dir, analysis_name, "full_model"))
+    rows.extend(load_model_results(zero_dir, analysis_name, "zero_input"))
+
+    if not rows:
+        return None, None, None
+
+    df = pd.DataFrame(rows).sort_values(["model_type", "model_name", "fold"])
+    df_mean = df.groupby(["model_type", "model_name"]).agg(
+        Dice_mean=("Dice", "mean"),
+        Dice_std=("Dice", "std"),
+        F1_mean=("F1", "mean"),
+        F1_std=("F1", "std"),
+        NSD_mean=("NSD", "mean"),
+        NSD_std=("NSD", "std"),
+    ).reset_index()
+    df_mean = df_mean.sort_values(["model_type", "model_name"])
+
+    importance_rows = []
+    for _, row in df_mean.iterrows():
+        model_name = row["model_name"]
+        if "zero_input_channel" not in model_name:
+            continue
+        dataset_match = re.search(r"(Dataset\d+)", model_name)
+        if not dataset_match:
+            continue
+        dataset_id = dataset_match.group(1)
+        if dataset_id not in BASE_MODELS:
+            continue
+        full_row = df_mean[
+            (df_mean["model_name"] == BASE_MODELS[dataset_id])
+            & (df_mean["model_type"] == "full_model")
+        ]
+        if full_row.empty:
+            continue
+
+        full_dice = full_row.iloc[0]["Dice_mean"]
+        full_f1 = full_row.iloc[0]["F1_mean"]
+        channel_match = re.search(r"zero_input_channel_(.*)", model_name)
+        importance_rows.append({
+            "channel": channel_match.group(1) if channel_match else model_name,
+            "dataset": dataset_id,
+            "Dice_drop": full_dice - row["Dice_mean"],
+            "F1_drop": full_f1 - row["F1_mean"],
+            "full_model_dice": full_dice,
+            "zero_input_dice": row["Dice_mean"],
+            "full_model_f1": full_f1,
+            "zero_input_f1": row["F1_mean"],
+        })
+
+    importance_df = pd.DataFrame(importance_rows)
+    if not importance_df.empty:
+        importance_df = importance_df.rename(columns={"channel": "zero_input_channel"})
+        importance_df = importance_df.sort_values(
+            ["dataset", "Dice_drop"],
+            ascending=[True, False],
+        )
+        remaining_columns = [
+            column
+            for column in importance_df.columns
+            if column not in ("dataset", "zero_input_channel")
+        ]
+        importance_df = importance_df[["dataset", "zero_input_channel"] + remaining_columns]
+
+    return df, df_mean, importance_df
 
 
 def adjust_color(color, factor):
@@ -572,7 +680,204 @@ def save_lesion_size_threshold_plot(df):
     print(f"Saved: {output_path}")
 
 
+def save_iou_threshold_f1_plot():
+    if not os.path.exists(IOU_F1_SUMMARY_FILE):
+        print(f"IoU threshold summary not found: {IOU_F1_SUMMARY_FILE}")
+        return
+
+    df = pd.read_csv(IOU_F1_SUMMARY_FILE)
+    required_columns = {"model", "iou_threshold", "F1_mean", "F1_std"}
+    missing_columns = required_columns.difference(df.columns)
+    if missing_columns:
+        print(f"Missing columns in IoU threshold summary: {sorted(missing_columns)}")
+        return
+
+    output_dir = os.path.join(OUTPUT_DIR, "iou_threshold_analysis")
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "iou_threshold_f1_plot.png")
+
+    model_labels = {
+        "Dataset708_MM_Lesion_seg_all_together": "All together (708)",
+        "Dataset709_MM_Lesion_seg_just_ConvCT": "ConvCT (709)",
+        "Dataset710_MM_Lesion_seg_just_VMI_40": "VMI40 (710)",
+        "Dataset713_MM_Lesion_seg_just_CaSupp_25": "CaSupp25 (713)",
+        "Dataset717_MM_Lesion_seg_all_VMI": "All VMI (717)",
+        "Dataset718_MM_Lesion_seg_all_CaSupp": "All CaSupp (718)",
+    }
+    model_colors = {
+        "Dataset709_MM_Lesion_seg_just_ConvCT": "#1f77b4",
+        "Dataset710_MM_Lesion_seg_just_VMI_40": "#ff7f0e",
+        "Dataset713_MM_Lesion_seg_just_CaSupp_25": "#2ca02c",
+        "Dataset708_MM_Lesion_seg_all_together": "#d62728",
+        "Dataset717_MM_Lesion_seg_all_VMI": "#9467bd",
+        "Dataset718_MM_Lesion_seg_all_CaSupp": "#8c564b",
+    }
+
+    figure, axis = plt.subplots(figsize=(12, 5))
+    for model, model_df in df.groupby("model", sort=False):
+        model_df = model_df.sort_values("iou_threshold")
+        axis.errorbar(
+            model_df["iou_threshold"],
+            model_df["F1_mean"],
+            yerr=model_df["F1_std"],
+            marker="o",
+            markersize=4,
+            linewidth=1.5,
+            capsize=3,
+            color=model_colors.get(model, "#4C78A8"),
+            label=model_labels.get(model, model),
+        )
+
+    axis.set_title("F1 score versus IoU threshold")
+    axis.set_xlabel("IoU threshold")
+    axis.set_ylabel("F1")
+    axis.set_xticks(sorted(df["iou_threshold"].unique()))
+    axis.set_ylim(0, 1)
+    axis.grid(axis="y", linestyle="--", alpha=0.3)
+    axis.legend(loc="best", frameon=False)
+
+    figure.tight_layout()
+    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    plt.close(figure)
+    print(f"Saved: {output_path}")
+
+
+def save_feature_importance_outputs(threshold_label, df, df_mean, importance_df):
+    threshold_dir = os.path.join(OUTPUT_DIR, "feature_importance", threshold_label)
+    images_dir = os.path.join(threshold_dir, "images")
+    os.makedirs(images_dir, exist_ok=True)
+
+    results_csv = os.path.join(threshold_dir, "results_all_folds.csv")
+    mean_csv = os.path.join(threshold_dir, "results_model_means.csv")
+    importance_csv = os.path.join(threshold_dir, "feature_importance.csv")
+    summary_xlsx = os.path.join(threshold_dir, "feature_importance_summary.xlsx")
+
+    df.to_csv(results_csv, index=False)
+    df_mean.to_csv(mean_csv, index=False)
+    importance_df.to_csv(importance_csv, index=False)
+    print(f"Saved feature importance tables for {threshold_label}: {threshold_dir}")
+
+    if importance_df.empty:
+        with pd.ExcelWriter(summary_xlsx) as writer:
+            df.to_excel(writer, sheet_name="all_folds", index=False)
+            df_mean.to_excel(writer, sheet_name="model_means", index=False)
+            importance_df.to_excel(writer, sheet_name="feature_importance", index=False)
+        return
+
+    for dataset in importance_df["dataset"].unique():
+        subset = importance_df[importance_df["dataset"] == dataset].sort_values(
+            "Dice_drop",
+            ascending=False,
+        )
+        figure, axis = plt.subplots(figsize=(8, 5))
+        axis.bar(subset["zero_input_channel"], subset["Dice_drop"])
+        axis.set_ylabel("Dice drop (importance)")
+        axis.set_xlabel("Removed channel")
+        axis.set_title(f"Channel importance ({threshold_label} — {dataset})")
+        axis.tick_params(axis="x", rotation=45)
+        figure.tight_layout()
+        plot_path = os.path.join(
+            images_dir,
+            f"feature_importance_{threshold_label}_{dataset}.png",
+        )
+        figure.savefig(plot_path, dpi=600, bbox_inches="tight")
+        plt.close(figure)
+        print(f"Saved: {plot_path}")
+
+    label_map = {
+        "Dataset708": "All together (708)",
+        "Dataset717": "All VMI (717)",
+        "Dataset718": "All CaSupp (718)",
+    }
+    dice_heatmap_df = importance_df.pivot_table(
+        index="zero_input_channel",
+        columns="dataset",
+        values="Dice_drop",
+    )
+    f1_heatmap_df = importance_df.pivot_table(
+        index="zero_input_channel",
+        columns="dataset",
+        values="F1_drop",
+    )
+
+    channel_patterns = [
+        (r"conv\s*[_-]?\s*ct", 0),
+        (r"vmi\s*[_-]?\s*40", 1),
+        (r"vmi\s*[_-]?\s*80", 2),
+        (r"vmi\s*[_-]?\s*120", 3),
+        (r"ca\s*[_-]?\s*supp\s*[_-]?\s*25", 4),
+        (r"ca\s*[_-]?\s*supp\s*[_-]?\s*50", 5),
+        (r"ca\s*[_-]?\s*supp\s*[_-]?\s*75", 6),
+        (r"ca\s*[_-]?\s*supp\s*[_-]?\s*100", 7),
+    ]
+
+    def channel_order(channel):
+        channel_text = str(channel).lower()
+        for pattern, order in channel_patterns:
+            if re.search(pattern, channel_text):
+                return order
+        return len(channel_patterns)
+
+    ordered_channels = sorted(dice_heatmap_df.index, key=channel_order, reverse=True)
+    dice_heatmap_df = dice_heatmap_df.reindex(ordered_channels).rename(columns=label_map)
+    f1_heatmap_df = f1_heatmap_df.reindex(ordered_channels).rename(columns=label_map)
+
+    dice_heatmap_df.to_csv(os.path.join(threshold_dir, "feature_importance_heatmap_Dice.csv"))
+    f1_heatmap_df.to_csv(os.path.join(threshold_dir, "feature_importance_heatmap_F1.csv"))
+
+    with pd.ExcelWriter(summary_xlsx) as writer:
+        df.to_excel(writer, sheet_name="all_folds", index=False)
+        df_mean.to_excel(writer, sheet_name="model_means", index=False)
+        importance_df.to_excel(writer, sheet_name="feature_importance", index=False)
+        dice_heatmap_df.to_excel(writer, sheet_name="heatmap_Dice")
+        f1_heatmap_df.to_excel(writer, sheet_name="heatmap_F1")
+
+    dice_cbar_min = dice_heatmap_df.min().min()
+    dice_cbar_max = dice_heatmap_df.max().max()
+    for metric, heatmap_df, cbar_min, cbar_max in (
+        ("Dice", dice_heatmap_df, dice_cbar_min, dice_cbar_max),
+        ("F1", f1_heatmap_df, dice_cbar_min, dice_cbar_max),
+    ):
+        figure, axis = plt.subplots(figsize=(6, 6))
+        sns.heatmap(
+            heatmap_df,
+            annot=True,
+            cmap="viridis",
+            fmt=".3f",
+            linewidths=0.5,
+            vmin=cbar_min,
+            vmax=cbar_max,
+            cbar_kws={"label": f"{metric} drop"},
+            ax=axis,
+        )
+        axis.set_title(f"Channel importance heatmap — {metric} drop")
+        axis.set_ylabel("Zeroed channel")
+        axis.set_xlabel("Dataset")
+        figure.tight_layout()
+        heatmap_path = os.path.join(
+            images_dir,
+            f"feature_importance_heatmap_{threshold_label}_{metric}.png",
+        )
+        figure.savefig(heatmap_path, dpi=600, bbox_inches="tight")
+        plt.close(figure)
+        print(f"Saved: {heatmap_path}")
+
+
 def main():
+    for threshold_label, analysis_name in THRESHOLD_ANALYSES.items():
+        df, df_mean, importance_df = compute_feature_importance(analysis_name)
+        if df is None:
+            print(f"No feature importance results for threshold: {threshold_label}")
+            continue
+        save_feature_importance_outputs(
+            threshold_label,
+            df,
+            df_mean,
+            importance_df,
+        )
+
+    save_iou_threshold_f1_plot()
+
     patient_df = load_patient_rows()
     significance = load_significance_results()
     loo_zero_tests = load_loo_zero_tests()
