@@ -785,9 +785,9 @@ def save_feature_importance_outputs(threshold_label, df, df_mean, importance_df)
         print(f"Saved: {plot_path}")
 
     label_map = {
-        "Dataset708": "All together (708)",
-        "Dataset717": "All VMI (717)",
-        "Dataset718": "All CaSupp (718)",
+        "Dataset708": "All together",
+        "Dataset717": "All VMI",
+        "Dataset718": "All CaSupp",
     }
     dice_heatmap_df = importance_df.pivot_table(
         index="zero_input_channel",
