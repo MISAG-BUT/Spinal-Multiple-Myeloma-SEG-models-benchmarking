@@ -15,18 +15,18 @@ from matplotlib.patches import Patch
 ROOT = "/home/nohel/DATA/MultipleMyeloma_analyses"
 ANALYSIS = "longi_summary_all"
 JSON_ROOT = os.path.join(ROOT, "full_models", ANALYSIS)
-OUTPUT_DIR = os.path.join(ROOT, "results", "figures_final_new_3", "longi_summary_all_dice_f1")
+OUTPUT_DIR = os.path.join(ROOT, "results_final", "figure_final")
 STATISTICS_FILE = os.path.join(
     ROOT,
-    "results",
-    "figures_final_new_2",
+    "results_final",
+    "tables_final",
     "statistical_analysis",
     "single_input_pairwise_tests.csv",
 )
 LOO_ZERO_STATISTICS_FILE = os.path.join(
     ROOT,
-    "results",
-    "figures_final_new_2",
+    "results_final",
+    "tables_final",
     "statistical_analysis",
     "loo_differences_vs_zero_tests.csv",
 )
@@ -51,8 +51,9 @@ BASE_MODELS = {
 }
 IOU_F1_SUMMARY_FILE = os.path.join(
     ROOT,
-    "iou_threshold_analysis_full_models",
-    ANALYSIS,
+    "results_final",
+    "tables_final",
+    "iou_threshold_analysis",
     "iou_threshold_f1_summary.csv",
 )
 
@@ -149,10 +150,14 @@ def load_patient_rows():
                 if not isinstance(metric_entry, dict):
                     continue
                 rows.append({
+                    "model_name": model_name,
                     "dataset_id": dataset_id,
-                    "case_id": extract_case_id(item),
+                    "dataset_label": f"Dataset_{dataset_id}",
+                    "case_id": extract_case_id(item)
+                    or f"{os.path.basename(json_file)}_{len(rows)}",
                     "Dice": metric_entry.get("Dice"),
                     "F1": metric_entry.get("F1"),
+                    "NSD": metric_entry.get("NSD"),
                 })
 
     if not rows:
@@ -184,9 +189,12 @@ def load_threshold_patient_rows():
                     rows.append({
                         "threshold": threshold,
                         "model_label": model_label,
-                        "case_id": extract_case_id(item),
+                        "model_name": model_name,
+                        "case_id": extract_case_id(item)
+                        or f"{os.path.basename(json_file)}_{len(rows)}",
                         "Dice": metric_entry.get("Dice"),
                         "F1": metric_entry.get("F1"),
+                        "NSD": metric_entry.get("NSD"),
                     })
 
     if not rows:
@@ -742,28 +750,12 @@ def save_iou_threshold_f1_plot():
     print(f"Saved: {output_path}")
 
 
-def save_feature_importance_outputs(threshold_label, df, df_mean, importance_df):
-    threshold_dir = os.path.join(OUTPUT_DIR, "feature_importance", threshold_label)
-    images_dir = os.path.join(threshold_dir, "images")
-    os.makedirs(images_dir, exist_ok=True)
-
-    results_csv = os.path.join(threshold_dir, "results_all_folds.csv")
-    mean_csv = os.path.join(threshold_dir, "results_model_means.csv")
-    importance_csv = os.path.join(threshold_dir, "feature_importance.csv")
-    summary_xlsx = os.path.join(threshold_dir, "feature_importance_summary.xlsx")
-
-    df.to_csv(results_csv, index=False)
-    df_mean.to_csv(mean_csv, index=False)
-    importance_df.to_csv(importance_csv, index=False)
-    print(f"Saved feature importance tables for {threshold_label}: {threshold_dir}")
-
+def save_feature_importance_plots(threshold_label, importance_df):
     if importance_df.empty:
-        with pd.ExcelWriter(summary_xlsx) as writer:
-            df.to_excel(writer, sheet_name="all_folds", index=False)
-            df_mean.to_excel(writer, sheet_name="model_means", index=False)
-            importance_df.to_excel(writer, sheet_name="feature_importance", index=False)
         return
 
+    images_dir = os.path.join(OUTPUT_DIR, "feature_importance", threshold_label)
+    os.makedirs(images_dir, exist_ok=True)
     for dataset in importance_df["dataset"].unique():
         subset = importance_df[importance_df["dataset"] == dataset].sort_values(
             "Dice_drop",
@@ -822,16 +814,6 @@ def save_feature_importance_outputs(threshold_label, df, df_mean, importance_df)
     dice_heatmap_df = dice_heatmap_df.reindex(ordered_channels).rename(columns=label_map)
     f1_heatmap_df = f1_heatmap_df.reindex(ordered_channels).rename(columns=label_map)
 
-    dice_heatmap_df.to_csv(os.path.join(threshold_dir, "feature_importance_heatmap_Dice.csv"))
-    f1_heatmap_df.to_csv(os.path.join(threshold_dir, "feature_importance_heatmap_F1.csv"))
-
-    with pd.ExcelWriter(summary_xlsx) as writer:
-        df.to_excel(writer, sheet_name="all_folds", index=False)
-        df_mean.to_excel(writer, sheet_name="model_means", index=False)
-        importance_df.to_excel(writer, sheet_name="feature_importance", index=False)
-        dice_heatmap_df.to_excel(writer, sheet_name="heatmap_Dice")
-        f1_heatmap_df.to_excel(writer, sheet_name="heatmap_F1")
-
     dice_cbar_min = dice_heatmap_df.min().min()
     dice_cbar_max = dice_heatmap_df.max().max()
     for metric, heatmap_df, cbar_min, cbar_max in (
@@ -865,16 +847,11 @@ def save_feature_importance_outputs(threshold_label, df, df_mean, importance_df)
 
 def main():
     for threshold_label, analysis_name in THRESHOLD_ANALYSES.items():
-        df, df_mean, importance_df = compute_feature_importance(analysis_name)
-        if df is None:
+        _, _, importance_df = compute_feature_importance(analysis_name)
+        if importance_df is None:
             print(f"No feature importance results for threshold: {threshold_label}")
             continue
-        save_feature_importance_outputs(
-            threshold_label,
-            df,
-            df_mean,
-            importance_df,
-        )
+        save_feature_importance_plots(threshold_label, importance_df)
 
     save_iou_threshold_f1_plot()
 

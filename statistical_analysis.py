@@ -1,22 +1,14 @@
 import itertools
-import os
 
 import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, rankdata, shapiro, wilcoxon
 
 
-RESULTS_DIR = "/home/nohel/DATA/MultipleMyeloma_analyses/results/figures_final_new_2"
-OUTPUT_DIR = os.path.join(RESULTS_DIR, "statistical_analysis")
-
-LONGI_FILE = os.path.join(RESULTS_DIR, "longi_summary_all_per_patient_values.csv")
-THRESHOLD_FILE = os.path.join(RESULTS_DIR, "threshold_comparison_per_patient_values.csv")
-
 METRICS = ["Dice", "F1"]
 SINGLE_INPUT_IDS = list(range(709, 717))
 LOO_IDS = list(range(700, 708))
 GROUND_TRUTH_ID = 708
-THRESHOLD_ORDER = ["all", "0.3cm", "0.5cm"]
 
 
 def holm_adjust(p_values):
@@ -282,10 +274,7 @@ def run_loo_comparisons(longi):
     return comparison_tests, differences, zero_tests, pd.DataFrame(normality_rows)
 
 
-def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    longi = pd.read_csv(LONGI_FILE)
+def build_statistical_tables(longi):
     longi["dataset_id"] = pd.to_numeric(longi["dataset_id"], errors="coerce")
     single_input = longi[longi["dataset_id"].isin(SINGLE_INPUT_IDS)].copy()
     single_conditions = [f"Dataset_{dataset_id}" for dataset_id in SINGLE_INPUT_IDS]
@@ -300,53 +289,18 @@ def main():
     )
     loo_comparisons, loo_differences, loo_zero_tests, loo_normality = run_loo_comparisons(longi)
 
-    # Threshold analysis is currently disabled.
-    # threshold = pd.read_csv(THRESHOLD_FILE)
-    # threshold_omnibus_rows = []
-    # threshold_pairwise_rows = []
-    # threshold_normality_rows = []
-    # for model_label, model_data in threshold.groupby("model_label"):
-    #     model_omnibus, model_pairwise, model_normality = run_paired_analysis(
-    #         model_data,
-    #         THRESHOLD_ORDER,
-    #         "threshold",
-    #         f"thresholds_{model_label}",
-    #     )
-    #     model_omnibus.insert(1, "model_label", model_label)
-    #     model_pairwise.insert(1, "model_label", model_label)
-    #     model_normality.insert(1, "model_label", model_label)
-    #     threshold_omnibus_rows.append(model_omnibus)
-    #     threshold_pairwise_rows.append(model_pairwise)
-    #     threshold_normality_rows.append(model_normality)
-    #
-    # threshold_omnibus = pd.concat(threshold_omnibus_rows, ignore_index=True)
-    # threshold_pairwise = pd.concat(threshold_pairwise_rows, ignore_index=True)
-    # threshold_normality = pd.concat(threshold_normality_rows, ignore_index=True)
+    return {
+        "single_input_omnibus_tests.csv": single_omnibus,
+        "single_input_pairwise_tests.csv": single_pairwise,
+        "single_input_normality.csv": single_normality,
+        "loo_vs_all_together_pairwise_tests.csv": loo_comparisons,
+        "loo_patient_level_differences.csv": loo_differences,
+        "loo_differences_vs_zero_tests.csv": loo_zero_tests,
+        "loo_normality_tests.csv": loo_normality,
+    }
 
-    single_omnibus.to_csv(os.path.join(OUTPUT_DIR, "single_input_omnibus_tests.csv"), index=False)
-    single_pairwise.to_csv(os.path.join(OUTPUT_DIR, "single_input_pairwise_tests.csv"), index=False)
-    single_normality.to_csv(os.path.join(OUTPUT_DIR, "single_input_normality.csv"), index=False)
-    loo_comparisons.to_csv(
-        os.path.join(OUTPUT_DIR, "loo_vs_all_together_pairwise_tests.csv"),
-        index=False,
-    )
-    loo_differences.to_csv(
-        os.path.join(OUTPUT_DIR, "loo_patient_level_differences.csv"),
-        index=False,
-    )
-    loo_zero_tests.to_csv(
-        os.path.join(OUTPUT_DIR, "loo_differences_vs_zero_tests.csv"),
-        index=False,
-    )
-    loo_normality.to_csv(
-        os.path.join(OUTPUT_DIR, "loo_normality_tests.csv"),
-        index=False,
-    )
-    # threshold_omnibus.to_csv(os.path.join(OUTPUT_DIR, "threshold_omnibus_tests.csv"), index=False)
-    # threshold_pairwise.to_csv(os.path.join(OUTPUT_DIR, "threshold_pairwise_tests.csv"), index=False)
-    # threshold_normality.to_csv(os.path.join(OUTPUT_DIR, "threshold_normality.csv"), index=False)
-
-    print(f"Saved statistical analysis results to: {OUTPUT_DIR}")
 
 if __name__ == "__main__":
+    from generate_suplementary_tables import main
+
     main()
