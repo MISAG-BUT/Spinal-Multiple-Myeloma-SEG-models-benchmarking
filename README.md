@@ -2,8 +2,22 @@
 
 > **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models together with `splits_final.json` are available on Zenodo.
 
-Code, trained-model configuration and results for the paper **"TODO: paper title"** (TODO: authors, journal, year).
+Code, trained-model configuration and results for the spinal multiple myeloma segmentation study.
 The study evaluates how different dual-energy CT image series (conventional CT, virtual monoenergetic images, calcium-suppressed images) contribute to nnU-Net segmentation of osteolytic spinal multiple myeloma (MM) lesions: 19 models (Datasets 700–718), 5-fold cross-validation, input-channel ablations (leave-one-out, single-input, zero-input), lesion-size and IoU-threshold sensitivity analyses, statistical tests and computational cost.
+
+**Authors:** Michal Nohel<sup>1,†</sup>, Vlastimil Valek<sup>2,3,†</sup>, Tomas Rohan<sup>2,3</sup>, Martin Stork<sup>4</sup>, Roman Jakubicek<sup>1</sup>, Jiri Chmelik<sup>1,††,\*</sup>, Marek Dostal<sup>2,5,††,\*</sup>
+
+**Affiliations:**
+
+<sup>1</sup> Department of Biomedical Engineering, Faculty of Electrical Engineering and Communication, Brno University of Technology, Brno, Czech Republic<br>
+<sup>2</sup> Department of Radiology and Nuclear Medicine, University Hospital Brno, Brno, Czech Republic<br>
+<sup>3</sup> Department of Radiology and Nuclear Medicine, Faculty of Medicine, Masaryk University, Brno, Czech Republic<br>
+<sup>4</sup> Internal Hematology and Oncology Clinic, University Hospital Brno, Brno, Czech Republic<br>
+<sup>5</sup> Department of Biophysics, Masaryk University, Brno, Czech Republic
+
+<sup>*</sup> Corresponding authors: Marek Dostal (Dostal.Marek@fnbrno.cz), Jiri Chmelik (chmelikj@vut.cz)<br>
+<sup>†</sup> These authors contributed equally<br>
+<sup>††</sup> These authors contributed equally
 
 ![Dice and F1 of all models](results/figures/models_700_718_Dice_F1_boxplot.png)
 
@@ -13,8 +27,9 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 |----------|------|
 | Paper | TODO |
 | Dataset (TCIA, Spinal-Multiple-Myeloma-SEG) | [doi:10.7937/k4qv-hh78](https://doi.org/10.7937/k4qv-hh78) |
-| Trained models (Zenodo) | TODO (Zenodo DOI) |
+| Trained models (Zenodo) | [Spinal-Multiple-Myeloma-SEG nnU-Net models](https://zenodo.org/uploads/18598645) |
 | Dataset / annotation pipeline code and models | [MISAG-BUT/Spinal-Multiple-Myeloma-SEG](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG) |
+| End-to-end prediction on new NIfTI data | [run_prediction_of_nnUNet_networks_on_new_data.py](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/run_prediction_of_nnUNet_networks_on_new_data.py) |
 | nnU-Net | [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet) |
 | LongiSeg (evaluation code, modified here) | [MIC-DKFZ/LongiSeg](https://github.com/MIC-DKFZ/LongiSeg) – see [third_party/longiseg](third_party/longiseg/README.md) |
 
@@ -56,7 +71,7 @@ All models use the same nnU-Net `3d_fullres` architecture, trainer (`nnUNetTrain
 
 ## Run a trained model on new data
 
-Download the models from Zenodo (TODO link) and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
+Download the models from [Zenodo](https://zenodo.org/uploads/18598645) and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
 (contains `fold_0 … fold_4`, `plans.json`, `dataset.json`). Install nnU-Net ([installation instructions](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/installation_instructions.md); we used `nnunetv2 2.6.4`):
 
 ```bash
@@ -77,6 +92,22 @@ nnUNetv2_predict_from_modelfolder \
 
 `nnUNetv2_predict_from_modelfolder` does not require `nnUNet_raw/preprocessed/results` environment variables. The output is a lesion mask (`1` = MM lesion) for every case.
 [inference/run_predictions.sh](inference/run_predictions.sh) shows the exact way the cross-validation predictions of all 19 models were produced for the paper.
+
+### Complete ConvCT + VMI 40 keV example
+
+For an end-to-end example on a new scan, use the [`run_prediction_of_nnUNet_networks_on_new_data.py` pipeline](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/run_prediction_of_nnUNet_networks_on_new_data.py) in the companion [Spinal-Multiple-Myeloma-SEG repository](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG). It accepts a ConvCT NIfTI and a VMI 40 keV NIfTI, segments the spine from ConvCT, then segments myeloma lesions from VMI 40 keV using the spine mask, and writes both segmentations. The companion repository's [README](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/README.md) documents environment setup, model downloads, and configuration.
+
+After setting up that repository and downloading its required trained models, run:
+
+```bash
+python run_prediction_of_nnUNet_networks_on_new_data.py \
+    --path_to_convCT_nifti /path/to/ConvCT.nii.gz \
+    --path_to_VMI40_nifti /path/to/VMI40.nii.gz \
+    --path_to_output_folder /path/to/output \
+    --path_to_nnunet_results /path/to/Spinal-Multiple-Myeloma-SEG_nnUNet_models
+```
+
+Use corresponding ConvCT and VMI 40 keV volumes in NIfTI format, oriented in RAS as expected by the pipeline. The output is written to a patient-specific subfolder. **Choose a fresh output location or back up prior results first:** rerunning the script for the same patient removes that patient's existing working subfolder before recreating it. This model pipeline is for research and development, not clinical decision-making.
 
 ## Quick start: reproduce tables and figures (CPU only)
 
