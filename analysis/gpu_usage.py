@@ -166,6 +166,13 @@ def build_gpu_tables():
                 "epoch_count": len(epoch_times),
             })
 
+    if not training_gpu_rows:
+        raise FileNotFoundError(
+            f"No nnU-Net training debug.json files found under {TRAINING_RESULTS_ROOT}. "
+            "Download the trained models or set the nnUNet_results environment variable "
+            "to their parent directory."
+        )
+
     training_gpu_df = pd.DataFrame(training_gpu_rows).sort_values(
         ["dataset_id", "model", "fold"]
     ).reset_index(drop=True)
@@ -190,6 +197,6 @@ def build_gpu_tables():
 
 
 if __name__ == "__main__":
-    from generate_suplementary_tables import main
+    from generate_tables import generate_gpu_tables
 
-    main()
+    generate_gpu_tables()

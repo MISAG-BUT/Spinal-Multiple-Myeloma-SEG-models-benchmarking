@@ -598,6 +598,6 @@ def print_patient_sensitivity_summary(summary):
 
 
 if __name__ == "__main__":
-    from generate_suplementary_tables import main
+    from generate_tables import main
 
     main()
