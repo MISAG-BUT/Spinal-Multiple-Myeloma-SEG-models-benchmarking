@@ -1,4 +1,3 @@
-````
 # Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT
 
 > **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models will be linked here once the corresponding Zenodo record is publicly released. The patient-grouped cross-validation split is included in `results/splits_final.json`.
@@ -198,4 +197,3 @@ The `results/` directory contains stored evaluation outputs used to regenerate t
 ## License
 
 Apache License 2.0 – see [LICENSE](LICENSE). The LongiSeg patch is derived from Apache-2.0 licensed code by MIC-DKFZ.
-````
