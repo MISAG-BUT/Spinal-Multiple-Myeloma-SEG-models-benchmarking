@@ -1,3 +1,5 @@
 __pycache__/
 *.py[cod]
 *.pyc
+__pycache__/generate_longi_dice_f1_boxplots.cpython-312.pyc
+__pycache__/statistical_analysis.cpython-312.pyc
