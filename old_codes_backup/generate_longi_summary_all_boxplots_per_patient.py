@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 ROOT = "/home/nohel/DATA/MultipleMyeloma_analyses"
 ANALYSIS = "longi_summary_all"
 JSON_ROOT = os.path.join(ROOT, "full_models", ANALYSIS)
-OUTPUT_DIR = os.path.join(ROOT, "results", "threshold_all_figures_per_patient")
+OUTPUT_DIR = os.path.join(ROOT, "results_final", "threshold_all_figures_per_patient")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 

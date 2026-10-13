@@ -19,7 +19,7 @@ TARGET_MODELS = {
     "All CaSupp (718)": "Dataset718_MM_Lesion_seg_all_CaSupp",
 }
 
-OUTPUT_DIR = os.path.join(ROOT, "results", "threshold_comparison")
+OUTPUT_DIR = os.path.join(ROOT, "results_final", "threshold_comparison")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -27,7 +27,7 @@ def load_threshold_results():
     rows = []
 
     for threshold_label, analysis_name in ANALYSES.items():
-        csv_path = os.path.join(ROOT, "results", analysis_name, "results_all_folds.csv")
+        csv_path = os.path.join(ROOT, "results_final", analysis_name, "results_all_folds.csv")
 
         if not os.path.exists(csv_path):
             print(f"Skipping missing file: {csv_path}")

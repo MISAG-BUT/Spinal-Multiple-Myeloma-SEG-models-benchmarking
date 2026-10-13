@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 ROOT = "/home/nohel/DATA/MultipleMyeloma_analyses"
 ANALYSIS = "longi_summary_all"
-RESULTS_DIR = os.path.join(ROOT, "results", ANALYSIS)
+RESULTS_DIR = os.path.join(ROOT, "results_final", ANALYSIS)
 CSV_PATH = os.path.join(RESULTS_DIR, "results_all_folds.csv")
-OUTPUT_DIR = os.path.join(ROOT, "results", "threshold_all_figures")
+OUTPUT_DIR = os.path.join(ROOT, "results_final", "threshold_all_figures")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 

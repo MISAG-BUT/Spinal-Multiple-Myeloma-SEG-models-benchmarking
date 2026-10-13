@@ -22,7 +22,7 @@ TARGET_MODELS = {
     "All CaSupp (718)": "Dataset718_MM_Lesion_seg_all_CaSupp",
 }
 
-OUTPUT_DIR = os.path.join(ROOT, "results", "threshold_comparison_per_patient")
+OUTPUT_DIR = os.path.join(ROOT, "results_final", "threshold_comparison_per_patient")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 METRICS = ["Dice", "F1", "NSD"]

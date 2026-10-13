@@ -11,7 +11,7 @@ import statistical_analysis
 ROOT = "/home/nohel/DATA/MultipleMyeloma_analyses"
 OUTPUT_DIR = os.path.join(ROOT, "results_final", "tables_final")
 ANALYSES = list(figures.THRESHOLD_ANALYSES.values())
-LEGACY_RESULTS_DIR = os.path.join(ROOT, "results")
+RESULTS_DIR = os.path.join(ROOT, "results_final")
 IOU_F1_SUMMARY_FILE = os.path.join(
     ROOT,
     "iou_threshold_analysis_full_models",
@@ -48,7 +48,7 @@ def save_workbook(sheets, filename, output_dir=None):
 def generate_model_summary_tables():
     all_rows = []
     for analysis in ANALYSES:
-        file_path = os.path.join(LEGACY_RESULTS_DIR, analysis, "results_all_folds.csv")
+        file_path = os.path.join(RESULTS_DIR, analysis, "results_all_folds.csv")
         if not os.path.exists(file_path):
             continue
         analysis_df = pd.read_csv(file_path)
