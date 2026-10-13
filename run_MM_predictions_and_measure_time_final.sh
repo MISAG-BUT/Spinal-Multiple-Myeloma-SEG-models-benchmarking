@@ -22,7 +22,9 @@ GPU_LOG_DIR="$ANALYSIS_ROOT/gpu_logs"
 mkdir -p "$PREDICT_ROOT"
 mkdir -p "$GPU_LOG_DIR"
 
-TIME_LOG="$ANALYSIS_ROOT/inference_time_log.csv"
+TIME_LOG_DIR="$ANALYSIS_ROOT/inference_logs"
+mkdir -p "$TIME_LOG_DIR"
+TIME_LOG="$TIME_LOG_DIR/inference_time_log.csv"
 
 echo "MODEL,FOLD,START,END,DURATION_SEC,PARAMETERS" > "$TIME_LOG"
 

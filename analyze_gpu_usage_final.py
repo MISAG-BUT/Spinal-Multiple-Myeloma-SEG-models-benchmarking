@@ -9,7 +9,7 @@ import pandas as pd
 ROOT = "/home/nohel/DATA/MultipleMyeloma_analyses"
 TRAINING_RESULTS_ROOT = "/home/nohel/DATA/nnUNet_results"
 GPU_LOG_DIR = os.path.join(ROOT, "gpu_logs")
-TIME_LOG = os.path.join(ROOT, "inference_time_log.csv")
+TIME_LOG = os.path.join(ROOT, "inference_logs", "inference_time_log.csv")
 
 
 def _numeric_column(values, unit):
