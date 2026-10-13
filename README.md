@@ -1,23 +1,20 @@
-# Spinal MM analyses – multi-channel dual-energy CT segmentation of spinal multiple myeloma lesions
+# Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT
 
-> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models together with `splits_final.json` are available on Zenodo.
+> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models will be linked here once the corresponding Zenodo record is publicly released. The patient-grouped cross-validation split is included in `results/splits_final.json`.
 
-Code, trained-model configuration and results for the spinal multiple myeloma segmentation study.
+Code, trained-model configurations, and results accompanying the paper *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*.
 The study evaluates how different dual-energy CT image series (conventional CT, virtual monoenergetic images, calcium-suppressed images) contribute to nnU-Net segmentation of osteolytic spinal multiple myeloma (MM) lesions: 19 models (Datasets 700–718), 5-fold cross-validation, input-channel ablations (leave-one-out, single-input, zero-input), lesion-size and IoU-threshold sensitivity analyses, statistical tests and computational cost.
 
-**Authors:** Michal Nohel<sup>1,†</sup>, Vlastimil Valek<sup>2,3,†</sup>, Tomas Rohan<sup>2,3</sup>, Martin Stork<sup>4</sup>, Roman Jakubicek<sup>1</sup>, Jiri Chmelik<sup>1,††,\*</sup>, Marek Dostal<sup>2,5,††,\*</sup>
+**Authors:** Michal Nohel<sup>1,*</sup>, Vlastimil Valek<sup>2,3</sup>, Roman Jakubicek<sup>1</sup>, Marek Dostal<sup>2,4</sup>, Jiri Chmelik<sup>1</sup>
 
 **Affiliations:**
 
 <sup>1</sup> Department of Biomedical Engineering, Faculty of Electrical Engineering and Communication, Brno University of Technology, Brno, Czech Republic<br>
 <sup>2</sup> Department of Radiology and Nuclear Medicine, University Hospital Brno, Brno, Czech Republic<br>
 <sup>3</sup> Department of Radiology and Nuclear Medicine, Faculty of Medicine, Masaryk University, Brno, Czech Republic<br>
-<sup>4</sup> Internal Hematology and Oncology Clinic, University Hospital Brno, Brno, Czech Republic<br>
-<sup>5</sup> Department of Biophysics, Masaryk University, Brno, Czech Republic
+<sup>4</sup> Department of Biophysics, Masaryk University, Brno, Czech Republic
 
-<sup>*</sup> Corresponding authors: Marek Dostal (Dostal.Marek@fnbrno.cz), Jiri Chmelik (chmelikj@vut.cz)<br>
-<sup>†</sup> These authors contributed equally<br>
-<sup>††</sup> These authors contributed equally
+<sup>*</sup> Corresponding author: Michal Nohel (xnohel04@vutbr.cz)
 
 ![Dice and F1 of all models](results/figures/models_700_718_Dice_F1_boxplot.png)
 
@@ -25,9 +22,10 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 
 | Resource | Link |
 |----------|------|
-| Paper | TODO |
+| Benchmarking paper | Citation and DOI to be added upon publication |
 | Dataset (TCIA, Spinal-Multiple-Myeloma-SEG) | [doi:10.7937/k4qv-hh78](https://doi.org/10.7937/k4qv-hh78) |
-| Trained models (Zenodo) | [Spinal-Multiple-Myeloma-SEG nnU-Net models](https://zenodo.org/uploads/18598645) |
+| Trained models for the dataset/annotation pipeline | Public Zenodo record/DOI to be added after verification |
+| Trained models and supporting materials for this benchmark | Zenodo record/DOI to be added upon release |
 | Dataset / annotation pipeline code and models | [MISAG-BUT/Spinal-Multiple-Myeloma-SEG](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG) |
 | End-to-end prediction on new NIfTI data | [run_prediction_of_nnUNet_networks_on_new_data.py](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/run_prediction_of_nnUNet_networks_on_new_data.py) |
 | nnU-Net | [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet) |
@@ -58,20 +56,32 @@ Patient IDs in the result files are anonymized.
 
 ## Models
 
-| ID | Input channels (+ spine mask) |
-|----|-------------------------------|
-| 700–707 | leave-one-out: all 8 series except ConvCT / VMI 40 / VMI 80 / VMI 120 / CaSupp 25 / 50 / 75 / 100 |
-| 708 | all 8 series (ConvCT, VMI 40/80/120, CaSupp 25/50/75/100) |
-| 709–716 | single series (ConvCT, VMI 40, 80, 120, CaSupp 25, 50, 75, 100) |
-| 717 | all VMI (40, 80, 120) |
-| 718 | all CaSupp (25, 50, 75, 100) |
+| ID | CT reconstruction inputs | Total channels (including vertebral mask) |
+|----|--------------------------|------------------------------------------|
+| 700–707 | Leave-one-out: seven of eight CT reconstructions, excluding one reconstruction per model (ConvCT, VMI 40/80/120, or CaSupp 25/50/75/100, respectively) | 8 |
+| 708 | All eight CT reconstructions | 9 |
+| 709–716 | One CT reconstruction per model: ConvCT, VMI 40/80/120, or CaSupp 25/50/75/100, respectively | 2 |
+| 717 | All three VMI reconstructions | 4 |
+| 718 | All four CaSupp reconstructions | 5 |
 
-All models use the same nnU-Net `3d_fullres` architecture, trainer (`nnUNetTrainer`, 1000 epochs) and plans; they differ only in the number of input channels
-(see `results/tables/model_configuration/`).
+All models use the same nnU-Net `3d_fullres` architecture and training configuration (`nnUNetTrainer`, 1,000 epochs); the number of input channels varies with the reconstruction set (see `results/tables/model_configuration/`). The seven-stage 3D U-Net architecture uses encoder widths of 32, 64, 128, 256, 320, 320, and 320. Recorded parameter counts range from 126,933,932 (two channels) to 126,958,124 (nine channels), a difference of approximately 0.019%.
+
+### Input data and methodological considerations
+
+**Input format:** The lesion segmentation networks operate on 3D CT volumes in NIfTI format (`.nii.gz`). Each CT reconstruction is supplied as a separate input channel. In addition, **every model requires a binary vertebral (spine) segmentation mask** as the final input channel, encoded as `0` for background and `1` for vertebrae. This is an anatomical input to the lesion segmentation network, **not the lesion ground-truth mask**. All channels must represent the same examination and have matching spatial geometry. The study used manually corrected vertebral masks.
+
+The model predicts a separate binary multiple myeloma lesion segmentation (`0` = background, `1` = lesion). The number and order of input channels depend on the selected model and must match its `dataset.json`.
+
+### Methodological considerations
+
+- **Required anatomical input:** Every lesion model requires a binary vertebral segmentation mask (`0` = background, `1` = vertebrae) as its final input channel. The benchmark used manually corrected vertebral masks; results may differ when automatically generated masks are used on new examinations.
+- **Reference annotation:** Lesion annotations were created and reviewed on VMI 40 keV images. This may favor configurations containing VMI 40 keV and should be considered when interpreting modality comparisons.
+- **Validation:** The benchmark used patient-grouped five-fold cross-validation on 72 examinations from 67 patients. No independent external validation cohort was evaluated.
+- **Different ablations:** Leave-one-out models were trained without the excluded CT reconstruction; in the zero-input experiments, an existing trained model was evaluated with one image channel set to zero at inference. These analyses are not interchangeable.
 
 ## Run a trained model on new data
 
-Download the models from [Zenodo](https://zenodo.org/uploads/18598645) and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
+Once the model archive is publicly released, download the trained models from the Zenodo link in the **Links** section and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
 (contains `fold_0 … fold_4`, `plans.json`, `dataset.json`). Install nnU-Net ([installation instructions](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/installation_instructions.md); we used `nnunetv2 2.6.4`):
 
 ```bash
@@ -79,15 +89,14 @@ bash environment/setup_nnunet_env.sh cu126        # or install torch + nnU-Net m
 source .venv-nnunet/bin/activate
 ```
 
-Input images must be NIfTI files in nnU-Net naming: `<case>_0000.nii.gz`, `<case>_0001.nii.gz`, … one file per input channel, in the same channel order as the model was trained with
-(see `channel_names` in the model's `dataset.json`; the last channel is the spine mask), resampling-free, same series as in the table above. Then:
+Input data must be NIfTI files (`.nii.gz`) following nnU-Net naming: `<case>_0000.nii.gz`, `<case>_0001.nii.gz`, …, with **one file per input channel**. Supply the CT reconstructions in the same channel order used during training (see `channel_names` in the model's `dataset.json`). **The final channel must contain the binary vertebral segmentation mask** (`0` = background, `1` = vertebrae), not a CT reconstruction or lesion label. All channels must have matching dimensions, spacing, orientation, and spatial alignment. nnU-Net applies its configured preprocessing during prediction. Then:
 
 ```bash
 nnUNetv2_predict_from_modelfolder \
     -i INPUT_FOLDER \
     -o OUTPUT_FOLDER \
     -m /path/to/nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres \
-    -f all            # use "0 1 2 3 4" for the 5-fold ensemble
+    -f 0 1 2 3 4      # five-fold ensemble; requires all five trained folds
 ```
 
 `nnUNetv2_predict_from_modelfolder` does not require `nnUNet_raw/preprocessed/results` environment variables. The output is a lesion mask (`1` = MM lesion) for every case.
@@ -139,8 +148,8 @@ Use `MM_RESULTS_DIR=/other/path` to write/read results elsewhere.
    source .venv-nnunet/bin/activate
    source config.sh                                  # nnUNet_raw / nnUNet_preprocessed / nnUNet_results
    ```
-2. **Data and models** – the data are from [TCIA](https://doi.org/10.7937/k4qv-hh78), converted to nnU-Net format (`Dataset700 … Dataset718` in `$nnUNet_raw`, channels as in the table above, last channel is the spine mask; labels `background=0`, `Lesions=1`).
-   Trained models (`$nnUNet_results`) and `splits_final.json` come from Zenodo. Ground-truth labels per fold are expected in `$nnUNet_raw/MM_GT_DATA/labelsTr_fold_{0..4}`.
+2. **Data and models** – the data are from [TCIA](https://doi.org/10.7937/k4qv-hh78), converted to nnU-Net format (`Dataset700 … Dataset718` in `$nnUNet_raw`, channels as in the table above, with a binary vertebral mask (`0` = background, `1` = vertebrae) as the last input channel; lesion ground-truth labels are separate (`background=0`, `Lesions=1`)).
+   Trained models (`$nnUNet_results`) are distributed separately; see the Zenodo release link once published. The cross-validation split is also included in `results/splits_final.json` in this repository. Ground-truth labels per fold are expected in `$nnUNet_raw/MM_GT_DATA/labelsTr_fold_{0..4}`.
    Training itself is standard nnU-Net and is not part of this repository.
 3. **Inference** – `bash inference/run_predictions.sh` (predicts the validation cases of every fold, logs time and GPU utilization into `results/`).
 4. **Evaluation** – `bash evaluation/run_evaluation.sh` (Dice, NSD, HD95, lesion-wise F1, …; IoU threshold 0.1) and
@@ -151,19 +160,23 @@ All paths are configured centrally in [config.py](config.py) / [config.sh](confi
 
 ## Hardware
 
-Training (nnU-Net): NVIDIA A40 and Tesla V100 GPUs. Inference timing: see `results/tables/gpu_analysis/`.
+Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and 15 fold-training runs, respectively). Inference benchmarking was performed on an NVIDIA GeForce RTX 5080 (16 GB) workstation; see `results/tables/gpu_analysis/` for the reported timings and GPU measurements. These timing measurements cover nnU-Net inference, not the entire raw-data-to-segmentation workflow.
 
 ## Citation
 
 ```bibtex
-TODO: paper citation
+Citation for the benchmarking paper will be added upon publication.
 ```
 
 Dataset:
 
 > Nohel, M., Válek V., Rohan T., Štork M., Jakubíček R., Chmelík J., Dostál M. (2026) **Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG) (Version 1) [Dataset]**. The Cancer Imaging Archive. https://doi.org/10.7937/k4qv-hh78
 
-Please also cite nnU-Net and LongiSeg (see the respective repositories).
+When using this repository, please cite the benchmarking paper once published, the dataset citation above, and the underlying nnU-Net and LongiSeg methods as appropriate (see their respective repositories).
+
+## Reproducibility and scope
+
+The `results/` directory contains stored evaluation outputs used to regenerate the published tables and figures. Regenerating these summaries from the stored results is different from independently reproducing the original training, cross-validation inference and lesion evaluation, which additionally require the source data, trained models, compatible software and the documented fold split. Models and scripts are provided for research use; they have not been externally validated for clinical deployment.
 
 ## License
 
