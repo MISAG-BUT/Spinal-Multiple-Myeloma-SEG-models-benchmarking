@@ -52,8 +52,6 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 ```
 
 Evaluation JSONs exist for three lesion-size filters: `longi_summary_all`, `longi_summary_larger_than_0_3_cubic_cm`, `longi_summary_larger_than_0_5_cubic_cm`.
-Patient IDs in the result files are anonymized.
-
 ## Models
 
 | ID | CT reconstruction inputs | Total channels (including vertebral mask) |
