@@ -146,8 +146,17 @@ def generate_feature_importance_tables():
 
 def generate_statistical_tables(patient_df):
     stats_dir = os.path.join(OUTPUT_DIR, "statistical_analysis")
-    for filename, table in statistical_analysis.build_statistical_tables(patient_df).items():
+    original_tables = statistical_analysis.build_statistical_tables(patient_df)
+    for filename, table in original_tables.items():
         save_table(table, filename, stats_dir)
+    sensitivity_tables, summary = statistical_analysis.build_patient_level_sensitivity_tables(
+        patient_df,
+        original_tables,
+    )
+    sensitivity_dir = os.path.join(stats_dir, "patient_level_sensitivity")
+    for filename, table in sensitivity_tables.items():
+        save_table(table, filename, sensitivity_dir)
+    statistical_analysis.print_patient_sensitivity_summary(summary)
 
 
 def generate_iou_input_table():
