@@ -1,0 +1,17 @@
+analysis,metric,condition,n_patients,test_used,p_value,rank_biserial_effect,holm_p_value,significance
+loo_difference_vs_zero,Dice,Dataset_700,72,one_sample_wilcoxon,0.29658950622618774,-0.1415525114155251,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_701,72,one_sample_wilcoxon,2.324304162058368e-05,-0.573820395738204,0.00018594433296466943,***
+loo_difference_vs_zero,Dice,Dataset_702,72,one_sample_wilcoxon,0.4795208782973309,-0.0958904109589041,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_703,72,one_sample_wilcoxon,0.3515737251905745,-0.1263318112633181,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_704,72,one_sample_wilcoxon,0.8442898396297687,-0.02663622526636225,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_705,72,one_sample_wilcoxon,0.0707676894651725,-0.2450532724505327,0.42460613679103504,ns
+loo_difference_vs_zero,Dice,Dataset_706,72,one_sample_wilcoxon,0.23638641317892062,-0.16057838660578386,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_707,72,one_sample_wilcoxon,0.021087955813874716,-0.3127853881278539,0.14761569069712302,ns
+loo_difference_vs_zero,F1,Dataset_700,72,one_sample_wilcoxon,0.1520125152813551,-0.19561815336463223,0.5473587987327238,ns
+loo_difference_vs_zero,F1,Dataset_701,72,one_sample_wilcoxon,0.10973882612578605,-0.22153209109730848,0.5473587987327238,ns
+loo_difference_vs_zero,F1,Dataset_702,72,one_sample_wilcoxon,0.6181346865381498,-0.06807511737089202,0.6181346865381498,ns
+loo_difference_vs_zero,F1,Dataset_703,72,one_sample_wilcoxon,0.07144283467837406,-0.2496894409937888,0.42865700807024437,ns
+loo_difference_vs_zero,F1,Dataset_704,72,one_sample_wilcoxon,0.03856987585695126,-0.28450704225352114,0.26998913099865884,ns
+loo_difference_vs_zero,F1,Dataset_705,72,one_sample_wilcoxon,0.10947175974654474,-0.22012072434607646,0.5473587987327238,ns
+loo_difference_vs_zero,F1,Dataset_706,72,one_sample_wilcoxon,0.19088592167541707,-0.17987927565392353,0.5473587987327238,ns
+loo_difference_vs_zero,F1,Dataset_707,72,one_sample_wilcoxon,0.026649143132359797,-0.3006088280060883,0.21319314505887837,ns

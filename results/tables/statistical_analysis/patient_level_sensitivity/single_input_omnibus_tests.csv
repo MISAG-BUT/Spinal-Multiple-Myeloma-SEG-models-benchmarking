@@ -1,0 +1,3 @@
+analysis,metric,n_patients,n_conditions,test_used,test_statistic,p_value,significance
+single_input_models_709_716_patient_level,Dice,67,8,friedman,422.23795983650245,4.046529759485275e-87,***
+single_input_models_709_716_patient_level,F1,67,8,friedman,407.44406900231195,6.039476533826335e-84,***

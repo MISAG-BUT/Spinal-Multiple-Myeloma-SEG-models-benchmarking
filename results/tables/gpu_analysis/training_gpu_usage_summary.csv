@@ -1,0 +1,24 @@
+dataset_id,model,gpu_name,folds,mean_epoch_time_sec,epoch_count
+700,Dataset700_MM_Lesion_seg_Leave_One_Out_without_ConvCT,Tesla V100-PCIE-32GB,5,120.695352,5000
+701,Dataset701_MM_Lesion_seg_Leave_One_Out_without_VMI_40,NVIDIA A40,5,83.938526,5000
+702,Dataset702_MM_Lesion_seg_Leave_One_Out_without_VMI_80,NVIDIA A40,5,92.93555,5000
+703,Dataset703_MM_Lesion_seg_Leave_One_Out_without_VMI_120,NVIDIA A40,5,90.11934,5000
+704,Dataset704_MM_Lesion_seg_Leave_One_Out_without_CaSupp_25,NVIDIA A40,4,93.08445521526352,4065
+704,Dataset704_MM_Lesion_seg_Leave_One_Out_without_CaSupp_25,NVIDIA L40,1,93.5782245681382,1042
+705,Dataset705_MM_Lesion_seg_Leave_One_Out_without_CaSupp_50,NVIDIA A40,5,98.393686,5000
+706,Dataset706_MM_Lesion_seg_Leave_One_Out_without_CaSupp_75,NVIDIA A40,4,103.133065,4000
+706,Dataset706_MM_Lesion_seg_Leave_One_Out_without_CaSupp_75,NVIDIA L40,1,55.23743,1000
+707,Dataset707_MM_Lesion_seg_Leave_One_Out_without_CaSupp_100,NVIDIA A40,5,87.362464,5000
+708,Dataset708_MM_Lesion_seg_all_together,NVIDIA A40,5,88.89048199999999,5000
+709,Dataset709_MM_Lesion_seg_just_ConvCT,NVIDIA A40,5,67.613364,5000
+710,Dataset710_MM_Lesion_seg_just_VMI_40,NVIDIA A40,5,67.261854,5000
+711,Dataset711_MM_Lesion_seg_just_VMI_80,NVIDIA A40,5,67.451212,5000
+712,Dataset712_MM_Lesion_seg_just_VMI_120,NVIDIA A40,5,67.2131,5000
+713,Dataset713_MM_Lesion_seg_just_CaSupp_25,NVIDIA A40,5,67.457582,5000
+714,Dataset714_MM_Lesion_seg_just_CaSupp_50,NVIDIA A40,5,67.608516,5000
+715,Dataset715_MM_Lesion_seg_just_CaSupp_75,NVIDIA A40,4,67.5296975,4000
+715,Dataset715_MM_Lesion_seg_just_CaSupp_75,NVIDIA L40,1,48.6945,1000
+716,Dataset716_MM_Lesion_seg_just_CaSupp_100,NVIDIA A40,4,67.83715918418419,3999
+716,Dataset716_MM_Lesion_seg_just_CaSupp_100,NVIDIA L40,1,48.907050000000005,1000
+717,Dataset717_MM_Lesion_seg_all_VMI,Tesla V100-PCIE-32GB,5,64.890382,5000
+718,Dataset718_MM_Lesion_seg_all_CaSupp,Tesla V100-PCIE-32GB,5,79.48613399999999,5000

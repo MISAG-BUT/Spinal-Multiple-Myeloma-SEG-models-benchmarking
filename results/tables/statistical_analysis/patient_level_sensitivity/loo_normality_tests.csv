@@ -1,0 +1,17 @@
+analysis,metric,condition,difference,n_patients,normality_test,alpha,shapiro_p_value,normality_assessment
+loo_paired_differences,Dice,Dataset_700,Dataset_700 - Dataset_708,67,shapiro_wilk,0.05,0.01901624344482254,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_701,Dataset_701 - Dataset_708,67,shapiro_wilk,0.05,2.0048199202685587e-07,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_702,Dataset_702 - Dataset_708,67,shapiro_wilk,0.05,0.0037165687999764683,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_703,Dataset_703 - Dataset_708,67,shapiro_wilk,0.05,0.0021836372553750176,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_704,Dataset_704 - Dataset_708,67,shapiro_wilk,0.05,0.026843779310471445,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_705,Dataset_705 - Dataset_708,67,shapiro_wilk,0.05,0.0728880254352051,not_rejected_at_0.05
+loo_paired_differences,Dice,Dataset_706,Dataset_706 - Dataset_708,67,shapiro_wilk,0.05,2.4711640980924758e-05,rejected_at_0.05
+loo_paired_differences,Dice,Dataset_707,Dataset_707 - Dataset_708,67,shapiro_wilk,0.05,8.53981991923362e-05,rejected_at_0.05
+loo_paired_differences,F1,Dataset_700,Dataset_700 - Dataset_708,67,shapiro_wilk,0.05,0.00039465201384177793,rejected_at_0.05
+loo_paired_differences,F1,Dataset_701,Dataset_701 - Dataset_708,67,shapiro_wilk,0.05,0.5722290127398604,not_rejected_at_0.05
+loo_paired_differences,F1,Dataset_702,Dataset_702 - Dataset_708,67,shapiro_wilk,0.05,0.16976466469052676,not_rejected_at_0.05
+loo_paired_differences,F1,Dataset_703,Dataset_703 - Dataset_708,67,shapiro_wilk,0.05,0.0022513493159608128,rejected_at_0.05
+loo_paired_differences,F1,Dataset_704,Dataset_704 - Dataset_708,67,shapiro_wilk,0.05,0.29494952643116434,not_rejected_at_0.05
+loo_paired_differences,F1,Dataset_705,Dataset_705 - Dataset_708,67,shapiro_wilk,0.05,0.4043848630268915,not_rejected_at_0.05
+loo_paired_differences,F1,Dataset_706,Dataset_706 - Dataset_708,67,shapiro_wilk,0.05,0.843320824079977,not_rejected_at_0.05
+loo_paired_differences,F1,Dataset_707,Dataset_707 - Dataset_708,67,shapiro_wilk,0.05,0.03876485984532616,rejected_at_0.05

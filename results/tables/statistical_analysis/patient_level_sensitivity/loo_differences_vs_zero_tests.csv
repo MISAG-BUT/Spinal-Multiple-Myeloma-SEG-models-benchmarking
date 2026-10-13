@@ -1,0 +1,17 @@
+analysis,metric,condition,n_patients,test_used,p_value,rank_biserial_effect,holm_p_value,significance
+loo_difference_vs_zero,Dice,Dataset_700,67,one_sample_wilcoxon,0.36837734987711335,-0.1264266900790167,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_701,67,one_sample_wilcoxon,4.170960914645567e-05,-0.5759438103599649,0.0003336768731716454,***
+loo_difference_vs_zero,Dice,Dataset_702,67,one_sample_wilcoxon,0.5159175785573382,-0.0913081650570676,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_703,67,one_sample_wilcoxon,0.371712414868126,-0.12554872695346794,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_704,67,one_sample_wilcoxon,0.7642999678360837,-0.04214223002633889,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_705,67,one_sample_wilcoxon,0.046985226123933486,-0.2791922739244952,0.2819113567436009,ns
+loo_difference_vs_zero,Dice,Dataset_706,67,one_sample_wilcoxon,0.2025515415922371,-0.1791044776119403,1.0,ns
+loo_difference_vs_zero,Dice,Dataset_707,67,one_sample_wilcoxon,0.01790974867396731,-0.33274802458296754,0.12536824071777117,ns
+loo_difference_vs_zero,F1,Dataset_700,67,one_sample_wilcoxon,0.11259238395839641,-0.22300263388937663,0.5013600446035796,ns
+loo_difference_vs_zero,F1,Dataset_701,67,one_sample_wilcoxon,0.10536582908526594,-0.22930800542740842,0.5013600446035796,ns
+loo_difference_vs_zero,F1,Dataset_702,67,one_sample_wilcoxon,0.5545890907443694,-0.08367254635911352,0.5545890907443694,ns
+loo_difference_vs_zero,F1,Dataset_703,67,one_sample_wilcoxon,0.06300923718321606,-0.2673076923076923,0.3780554230992964,ns
+loo_difference_vs_zero,F1,Dataset_704,67,one_sample_wilcoxon,0.03680577390632342,-0.29790209790209793,0.2576404173442639,ns
+loo_difference_vs_zero,F1,Dataset_705,67,one_sample_wilcoxon,0.10027200892071593,-0.2344988344988345,0.5013600446035796,ns
+loo_difference_vs_zero,F1,Dataset_706,67,one_sample_wilcoxon,0.17302938407899915,-0.1944055944055944,0.5013600446035796,ns
+loo_difference_vs_zero,F1,Dataset_707,67,one_sample_wilcoxon,0.02658489911504684,-0.31167690956979804,0.2126791929203747,ns

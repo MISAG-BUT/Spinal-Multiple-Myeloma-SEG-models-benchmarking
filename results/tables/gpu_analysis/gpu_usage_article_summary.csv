@@ -1,0 +1,6 @@
+model_group,parameters,runtime_sec_median,runtime_sec_range_min,runtime_sec_range_max,avg_gpu_util_percent_median,avg_gpu_util_percent_range_min,avg_gpu_util_percent_range_max,max_gpu_util_percent_median,max_gpu_util_percent_range_min,max_gpu_util_percent_range_max,avg_memory_MiB_median,avg_memory_MiB_range_min,avg_memory_MiB_range_max,max_memory_MiB_median,max_memory_MiB_range_min,max_memory_MiB_range_max,avg_power_W_median,avg_power_W_range_min,avg_power_W_range_max,energy_Wh_median,energy_Wh_range_min,energy_Wh_range_max
+LOO (700-707),126954668.0,160.0,130,190,88.051,80.652,92.772,99.0,99,99,3823.889,3490.781,3976.768,4346.5,4175,4996,267.083,246.492,279.751,11.343,9.867,13.314
+All together (708),126958124.0,166.0,136,193,88.111,80.14,91.73,99.0,99,99,3726.581,3330.383,3766.249,4367.0,4213,4934,258.077,245.227,276.885,11.383,10.266,13.549
+Single input (709-716),126933932.0,140.5,124,165,92.448,89.782,94.201,99.0,99,99,3074.846,2948.309,3169.671,3456.0,3227,4357,280.998,272.981,285.683,10.998,9.7,13.014
+All VMI (717),126940844.0,143.0,125,173,91.873,86.179,93.382,99.0,99,99,3210.121,3108.445,3285.6,3682.0,3490,3692,278.65,262.491,283.2,11.06,9.753,12.98
+All CaSupp (718),126944300.0,152.0,132,183,90.856,85.874,92.633,99.0,99,99,3539.079,3394.106,3657.012,4002.0,3886,4213,277.978,260.303,282.826,11.564,10.193,13.591
