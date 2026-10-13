@@ -1,3 +1,4 @@
+````
 # Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT
 
 > **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models will be linked here once the corresponding Zenodo record is publicly released. The patient-grouped cross-validation split is included in `results/splits_final.json`.
@@ -64,9 +65,9 @@ Patient IDs in the result files are anonymized.
 | 717 | All three VMI reconstructions | 4 |
 | 718 | All four CaSupp reconstructions | 5 |
 
-All models use the same nnU-Net `3d_fullres` architecture and training configuration (`nnUNetTrainer`, 1,000 epochs); the number of input channels varies with the reconstruction set (see `results/tables/model_configuration/`). The seven-stage 3D U-Net architecture uses encoder widths of 32, 64, 128, 256, 320, 320, and 320. Recorded parameter counts range from 126,933,932 (two channels) to 126,958,124 (nine channels), a difference of approximately 0.019%.
+All 19 models were trained using the same nnU-Net v2 `3d_fullres` architecture, trainer (`nnUNetTrainer`, 1,000 epochs), and optimization settings. The number of input channels varied according to the selected CT reconstructions, resulting in only minor differences in parameter count (at most 0.019%). The seven-stage 3D U-Net architecture uses encoder widths of 32, 64, 128, 256, 320, 320, and 320; see `results/tables/model_configuration/` for the model configurations and parameter counts.
 
-### Input data and methodological considerations
+### Input data and output segmentation
 
 **Input format:** The lesion segmentation networks operate on 3D CT volumes in NIfTI format (`.nii.gz`). Each CT reconstruction is supplied as a separate input channel. In addition, **every model requires a binary vertebral (spine) segmentation mask** as the final input channel, encoded as `0` for background and `1` for vertebrae. This is an anatomical input to the lesion segmentation network, **not the lesion ground-truth mask**. All channels must represent the same examination and have matching spatial geometry. The study used manually corrected vertebral masks.
 
@@ -74,7 +75,7 @@ The model predicts a separate binary multiple myeloma lesion segmentation (`0` =
 
 ### Methodological considerations
 
-- **Required anatomical input:** Every lesion model requires a binary vertebral segmentation mask (`0` = background, `1` = vertebrae) as its final input channel. The benchmark used manually corrected vertebral masks; results may differ when automatically generated masks are used on new examinations.
+- **Vertebral-mask quality:** The benchmark used manually corrected vertebral masks; results may differ when automatically generated masks are used on new examinations.
 - **Reference annotation:** Lesion annotations were created and reviewed on VMI 40 keV images. This may favor configurations containing VMI 40 keV and should be considered when interpreting modality comparisons.
 - **Validation:** The benchmark used patient-grouped five-fold cross-validation on 72 examinations from 67 patients. No independent external validation cohort was evaluated.
 - **Different ablations:** Leave-one-out models were trained without the excluded CT reconstruction; in the zero-input experiments, an existing trained model was evaluated with one image channel set to zero at inference. These analyses are not interchangeable.
@@ -89,7 +90,25 @@ bash environment/setup_nnunet_env.sh cu126        # or install torch + nnU-Net m
 source .venv-nnunet/bin/activate
 ```
 
-Input data must be NIfTI files (`.nii.gz`) following nnU-Net naming: `<case>_0000.nii.gz`, `<case>_0001.nii.gz`, …, with **one file per input channel**. Supply the CT reconstructions in the same channel order used during training (see `channel_names` in the model's `dataset.json`). **The final channel must contain the binary vertebral segmentation mask** (`0` = background, `1` = vertebrae), not a CT reconstruction or lesion label. All channels must have matching dimensions, spacing, orientation, and spatial alignment. nnU-Net applies its configured preprocessing during prediction. Then:
+Input data must be NIfTI files (`.nii.gz`) following nnU-Net naming: `<case>_0000.nii.gz`, `<case>_0001.nii.gz`, …, with **one file per input channel**. Supply the CT reconstructions in the same channel order used during training (see `channel_names` in the model's `dataset.json`). **The final channel must contain the binary vertebral segmentation mask** (`0` = background, `1` = vertebrae), not a CT reconstruction or lesion label. All channels must have matching dimensions, spacing, orientation, and spatial alignment. nnU-Net applies its configured preprocessing during prediction.
+
+For example, a single-reconstruction model (Datasets 709–716) expects two NIfTI files per case:
+
+```text
+Patient001_0000.nii.gz  # CT reconstruction used by the selected model
+Patient001_0001.nii.gz  # binary vertebral segmentation mask (0 = background, 1 = vertebrae)
+```
+
+The full eight-reconstruction model (Dataset 708) expects nine NIfTI files per case:
+
+```text
+Patient001_0000.nii.gz  # first CT reconstruction
+...
+Patient001_0007.nii.gz  # eighth CT reconstruction
+Patient001_0008.nii.gz  # binary vertebral segmentation mask (0 = background, 1 = vertebrae)
+```
+
+These examples illustrate channel numbering only: **always use the exact reconstruction order defined by `channel_names` in the selected model's `dataset.json`**. To run inference:
 
 ```bash
 nnUNetv2_predict_from_modelfolder \
@@ -160,13 +179,11 @@ All paths are configured centrally in [config.py](config.py) / [config.sh](confi
 
 ## Hardware
 
-Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and 15 fold-training runs, respectively). Inference benchmarking was performed on an NVIDIA GeForce RTX 5080 (16 GB) workstation; see `results/tables/gpu_analysis/` for the reported timings and GPU measurements. These timing measurements cover nnU-Net inference, not the entire raw-data-to-segmentation workflow.
+Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and 15 fold-training runs, respectively; these counts should be verified against the training logs before publication). Inference benchmarking was performed on an NVIDIA GeForce RTX 5080 (16 GB) workstation; see `results/tables/gpu_analysis/` for the reported timings and GPU measurements. These timing measurements cover nnU-Net inference, not the entire raw-data-to-segmentation workflow.
 
 ## Citation
 
-```bibtex
-Citation for the benchmarking paper will be added upon publication.
-```
+The citation and DOI for the benchmarking paper will be added upon publication.
 
 Dataset:
 
@@ -181,3 +198,4 @@ The `results/` directory contains stored evaluation outputs used to regenerate t
 ## License
 
 Apache License 2.0 – see [LICENSE](LICENSE). The LongiSeg patch is derived from Apache-2.0 licensed code by MIC-DKFZ.
+````
