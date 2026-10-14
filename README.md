@@ -198,16 +198,12 @@ https://doi.org/10.1038/s41597-026-08061-x
 
 ```bibtex
 @article{nohel2026spinalmm,
-  author = {Michal Nohel and Vlastimil Valek and Tomas Rohan and Martin Stork and Roman Jakubicek and Jiri Chmelik and Marek Dostal},
+  author  = {Nohel, Michal and Valek, Vlastimil and Rohan, Tomas and Stork, Martin and Jakubicek, Roman and Chmelik, Jiri and Dostal, Marek},
+  title   = {{Spinal-Multiple-Myeloma-SEG}: Segmentation of spinal multiple myeloma lesions in dual-energy {CT}},
   journal = {Scientific Data},
-  title = {Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT},
-  publisher = {Springer Science and Business Media LLC},
-  year = {2026-8-11},
-  ISSN = {2052-4463},
-  medium = {online},
-  accessed = {2026-08-18},
-  DOI = {10.1038/s41597-026-08061-x},
-  URL = {https://www.nature.com/articles/s41597-026-08061-x},
+  year    = {2026},
+  doi     = {10.1038/s41597-026-08061-x},
+  url     = {https://doi.org/10.1038/s41597-026-08061-x}
 }
 ```
 
@@ -220,8 +216,8 @@ https://doi.org/10.7937/k4qv-hh78
 
 ```bibtex
 @misc{nohel2026tcia,
-  author       = {Nohel, Michal and V{\'a}lek, Vlastimil and Rohan, T. and {\v S}tork, M. and Jakub{\'i}{\v c}ek, Roman and Chmel{\'i}k, Jiri and Dost{\'a}l, Marek},
-  title        = {Segmentation of spinal multiple myeloma lesions in dual-energy CT ({Spinal-Multiple-Myeloma-SEG})},
+  author       = {Nohel, Michal and Valek, Vlastimil and Rohan, Tomas and Stork, Martin and Jakubicek, Roman and Chmelik, Jiri and Dostal, Marek},
+  title        = {Segmentation of spinal multiple myeloma lesions in dual-energy {CT} ({Spinal-Multiple-Myeloma-SEG})},
   year         = {2026},
   version      = {1},
   publisher    = {The Cancer Imaging Archive},
@@ -240,11 +236,12 @@ Nohel, M., Válek, V., Jakubíček, R., Dostál, M., Chmelík, J. (TODO).
 ```bibtex
 % TEMPLATE ONLY: replace after publication.
 @article{nohelTODOspectralbenchmark,
-  author  = {Nohel, Michal and V{\'a}lek, Vlastimil and Jakub{\'i}{\v c}ek, Roman and Dost{\'a}l, Marek and Chmel{\'i}k, Jiri},
-  title   = {Benchmarking Spectral Reconstructions ({VMI} and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy {CT}},
+  author  = {Nohel, Michal and Valek, Vlastimil and Jakubicek, Roman and Dostal, Marek and Chmelik, Jiri},
+  title   = {Benchmarking spectral reconstructions ({VMI} and calcium-suppressed) for multiple myeloma segmentation on dual-energy {CT}},
   journal = {TODO},
   year    = {TODO},
-  doi     = {TODO}
+  doi     = {TODO},
+  url     = {TODO}
 }
 ```
 
