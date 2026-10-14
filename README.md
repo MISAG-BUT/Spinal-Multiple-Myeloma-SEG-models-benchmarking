@@ -1,6 +1,6 @@
 # Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT
 
-> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and the trained models will be linked here once the corresponding Zenodo record is publicly released. The patient-grouped cross-validation split is included in `results/splits_final.json`.
+> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and **the trained weights for all 19 benchmark models are distributed separately on Zenodo (DOI: TODO; link to be added upon release)**. The patient-grouped cross-validation split is included in `results/splits_final.json`.
 
 Code, trained-model configurations, and results accompanying the paper *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*.
 The study evaluates how different dual-energy CT image series (conventional CT, virtual monoenergetic images, calcium-suppressed images) contribute to nnU-Net segmentation of osteolytic spinal multiple myeloma (MM) lesions: 19 models (Datasets 700–718), 5-fold cross-validation, input-channel ablations (leave-one-out, single-input, zero-input), lesion-size and IoU-threshold sensitivity analyses, statistical tests and computational cost.
@@ -16,6 +16,12 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 
 <sup>*</sup> Corresponding author: Michal Nohel (xnohel04@vutbr.cz)
 
+## Trained models and training data format
+
+**Download the trained models:** The weights for **all 19 nnU-Net v2 models (Datasets 700–718), including five trained folds per model**, are distributed in a **separate Zenodo archive**: **[Zenodo – 19 benchmarking models (DOI: TODO)](https://doi.org/TODO)**. Replace `TODO` with the final DOI when the archive is published. **The trained weights are not stored in this GitHub repository.** The Zenodo archive also contains `splits_final.json`.
+
+**Training data format:** All 19 models were **trained on 3D NIfTI volumes (`.nii.gz`)**, not directly on DICOM files. Each CT reconstruction was provided as a separate nnU-Net input channel, together with a **binary vertebral segmentation mask as the required final input channel**. For inference, supply aligned NIfTI files in the exact channel order specified by each model's `dataset.json` (see [Input data and output segmentation](#input-data-and-output-segmentation) and [Run a trained model on new data](#run-a-trained-model-on-new-data)).
+
 ![Dice and F1 of all models](results/figures/models_700_718_Dice_F1_boxplot.png)
 
 ## Links
@@ -26,7 +32,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 | Scientific Data publication (dataset description) | [doi:10.1038/s41597-026-08061-x](https://doi.org/10.1038/s41597-026-08061-x) |
 | Dataset (TCIA, Spinal-Multiple-Myeloma-SEG) | [doi:10.7937/k4qv-hh78](https://doi.org/10.7937/k4qv-hh78) |
 | Trained models for the dataset/annotation pipeline | [Zenodo record 18598645](https://zenodo.org/records/18598645) |
-| Trained models and supporting materials for this benchmark | Zenodo record/DOI: TODO (19 models and `splits_final.json`; to be added upon release) |
+| Trained models and supporting materials for this benchmark | **[Zenodo archive of 19 trained models — DOI: TODO](https://doi.org/TODO)** (includes `splits_final.json`; replace TODO upon release) |
 | Dataset / annotation pipeline code and models | [MISAG-BUT/Spinal-Multiple-Myeloma-SEG](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG) |
 | End-to-end prediction on new NIfTI data | [run_prediction_of_nnUNet_networks_on_new_data.py](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/run_prediction_of_nnUNet_networks_on_new_data.py) |
 | nnU-Net | [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet) |
@@ -63,11 +69,11 @@ Evaluation JSONs exist for three lesion-size filters: `longi_summary_all`, `long
 | 717 | All three VMI reconstructions | 4 |
 | 718 | All four CaSupp reconstructions | 5 |
 
-All 19 models were trained using the same nnU-Net v2 `3d_fullres` architecture, trainer (`nnUNetTrainer`, 1,000 epochs), and optimization settings. The number of input channels varied according to the selected CT reconstructions, resulting in only minor differences in parameter count (at most 0.019%). The seven-stage 3D U-Net architecture uses encoder widths of 32, 64, 128, 256, 320, 320, and 320; see `results/tables/model_configuration/` for the model configurations and parameter counts.
+**All 19 models were trained using 3D NIfTI (`.nii.gz`) inputs**, with one file per CT reconstruction channel and a binary vertebral mask as the final input channel. All models used the same nnU-Net v2 `3d_fullres` architecture, trainer (`nnUNetTrainer`, 1,000 epochs), and optimization settings. The number of input channels varied according to the selected CT reconstructions, resulting in only minor differences in parameter count (at most 0.019%). The seven-stage 3D U-Net architecture uses encoder widths of 32, 64, 128, 256, 320, 320, and 320; see `results/tables/model_configuration/` for the model configurations and parameter counts.
 
 ### Input data and output segmentation
 
-**Input format:** The lesion segmentation networks operate on 3D CT volumes in NIfTI format (`.nii.gz`). Each CT reconstruction is supplied as a separate input channel. In addition, **every model requires a binary vertebral (spine) segmentation mask** as the final input channel, encoded as `0` for background and `1` for vertebrae. This is an anatomical input to the lesion segmentation network, **not the lesion ground-truth mask**. All channels must represent the same examination and have matching spatial geometry. The study used manually corrected vertebral masks.
+**Input format:** The lesion segmentation networks **were trained on** 3D CT volumes in NIfTI format (`.nii.gz`). Each CT reconstruction is supplied as a separate input channel. In addition, **every model requires a binary vertebral (spine) segmentation mask** as the final input channel, encoded as `0` for background and `1` for vertebrae. This is an anatomical input to the lesion segmentation network, **not the lesion ground-truth mask**. All channels must represent the same examination and have matching spatial geometry. The study used manually corrected vertebral masks.
 
 The model predicts a separate binary multiple myeloma lesion segmentation (`0` = background, `1` = lesion). The number and order of input channels depend on the selected model and must match its `dataset.json`.
 
@@ -186,14 +192,14 @@ If you use this repository or its results, please cite the relevant publications
 ### Dataset paper (*Scientific Data*)
 
 Nohel, M., Válek, V., Rohan, T., Štork, M., Jakubíček, R., Chmelík, J., Dostál, M. (2026).  
-**Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT** *(title to be verified against the publisher record).*  
+**Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT**.  
 *Scientific Data*.  
 https://doi.org/10.1038/s41597-026-08061-x
 
 ```bibtex
 @article{nohel2026spinalmm,
   author  = {Nohel, Michal and V{\'a}lek, Vlastimil and Rohan, T. and {\v S}tork, M. and Jakub{\'i}{\v c}ek, Roman and Chmel{\'i}k, Jiri and Dost{\'a}l, Marek},
-  title   = {{TODO: Insert exact published Scientific Data article title}},
+  title   = {{Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT}},
   journal = {Scientific Data},
   year    = {2026},
   doi     = {10.1038/s41597-026-08061-x},
