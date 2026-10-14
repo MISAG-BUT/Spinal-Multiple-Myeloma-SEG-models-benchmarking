@@ -187,7 +187,7 @@ Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and
 
 ## Citation
 
-If you use this repository or its results, please cite the relevant publications and dataset below. For the 19-model spectral reconstruction comparison, please also cite the benchmarking paper once published. The BibTeX records are provided directly below each human-readable reference and together in [CITATION.bib](CITATION.bib).
+If you use this repository or its results, please cite the relevant publications and dataset below. For the 19-model spectral reconstruction comparison, please also cite the benchmarking paper once published.
 
 ### Dataset paper (*Scientific Data*)
 
