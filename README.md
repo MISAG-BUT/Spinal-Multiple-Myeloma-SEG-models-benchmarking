@@ -181,14 +181,84 @@ Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and
 
 ## Citation
 
-If you use this repository, its evaluation results, or the associated trained models in your research, please cite the **Scientific Data publication** describing the source dataset and the **TCIA dataset** itself. Once the benchmarking paper is published, please also cite that paper for the spectral-reconstruction comparison and the 19-model benchmark.
+If you use this repository or its results, please cite the relevant publications and dataset below. For the 19-model spectral reconstruction comparison, please also cite the benchmarking paper once published. The BibTeX records are provided directly below each human-readable reference and together in [CITATION.bib](CITATION.bib).
 
-- **Scientific Data publication:** Dataset description article (2026). **Scientific Data**. https://doi.org/10.1038/s41597-026-08061-x
-- **TCIA dataset:** Nohel, M., Válek, V., Rohan, T., Štork, M., Jakubíček, R., Chmelík, J., & Dostál, M. (2026). *Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG)* (Version 1) [Dataset]. The Cancer Imaging Archive. https://doi.org/10.7937/k4qv-hh78
-- **Benchmarking paper (TODO):** Nohel, M., Valek, V., Jakubicek, R., Dostal, M., & Chmelik, J. *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Journal, year, volume, pages, DOI: **TODO — add after publication**.
-- **nnU-Net:** Isensee, F., Jaeger, P. F., Kohl, S. A. A., Petersen, J., & Maier-Hein, K. H. (2021). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. *Nature Methods*, 18, 203–211. https://doi.org/10.1038/s41592-020-01008-z
+### Dataset paper (*Scientific Data*)
 
-The lesion-wise evaluation implementation builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiSeg); please also acknowledge or cite that project as appropriate for the methods you reuse. When the Zenodo archive of the 19 trained models is released, cite its specific version if you use those model weights (archive DOI: **TODO**). A separate archived release of this analysis repository is planned (software archive DOI: **TODO**).
+Nohel, M., Válek, V., Rohan, T., Štork, M., Jakubíček, R., Chmelík, J., Dostál, M. (2026).  
+**Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT** *(title to be verified against the publisher record).*  
+*Scientific Data*.  
+https://doi.org/10.1038/s41597-026-08061-x
+
+```bibtex
+@article{nohel2026spinalmm,
+  author  = {Nohel, Michal and V{\'a}lek, Vlastimil and Rohan, T. and {\v S}tork, M. and Jakub{\'i}{\v c}ek, Roman and Chmel{\'i}k, Jiri and Dost{\'a}l, Marek},
+  title   = {{TODO: Insert exact published Scientific Data article title}},
+  journal = {Scientific Data},
+  year    = {2026},
+  doi     = {10.1038/s41597-026-08061-x},
+  url     = {https://doi.org/10.1038/s41597-026-08061-x}
+}
+```
+
+### Dataset (TCIA)
+
+Nohel, M., Válek, V., Rohan, T., Štork, M., Jakubíček, R., Chmelík, J., Dostál, M. (2026).  
+**Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG) (Version 1) [Dataset].**  
+*The Cancer Imaging Archive*.  
+https://doi.org/10.7937/k4qv-hh78
+
+```bibtex
+@misc{nohel2026tcia,
+  author       = {Nohel, Michal and V{\'a}lek, Vlastimil and Rohan, T. and {\v S}tork, M. and Jakub{\'i}{\v c}ek, Roman and Chmel{\'i}k, Jiri and Dost{\'a}l, Marek},
+  title        = {Segmentation of spinal multiple myeloma lesions in dual-energy CT ({Spinal-Multiple-Myeloma-SEG})},
+  year         = {2026},
+  version      = {1},
+  publisher    = {The Cancer Imaging Archive},
+  howpublished = {Dataset},
+  doi          = {10.7937/k4qv-hh78},
+  url          = {https://doi.org/10.7937/k4qv-hh78}
+}
+```
+
+### Benchmarking paper (forthcoming)
+
+Nohel, M., Válek, V., Jakubíček, R., Dostál, M., Chmelík, J. (TODO).  
+**Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT.**  
+*Journal and DOI: TODO (not yet published).*
+
+```bibtex
+% TEMPLATE ONLY: replace after publication.
+@article{nohelTODOspectralbenchmark,
+  author  = {Nohel, Michal and V{\'a}lek, Vlastimil and Jakub{\'i}{\v c}ek, Roman and Dost{\'a}l, Marek and Chmel{\'i}k, Jiri},
+  title   = {Benchmarking Spectral Reconstructions ({VMI} and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy {CT}},
+  journal = {TODO},
+  year    = {TODO},
+  doi     = {TODO}
+}
+```
+
+### nnU-Net
+
+Isensee, F., Jaeger, P. F., Kohl, S. A. A., Petersen, J., Maier-Hein, K. H. (2021).  
+**nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation.**  
+*Nature Methods*, 18, 203–211.  
+https://doi.org/10.1038/s41592-020-01008-z
+
+```bibtex
+@article{isensee2021nnunet,
+  author  = {Isensee, Fabian and Jaeger, Paul F. and Kohl, Simon A. A. and Petersen, Jens and Maier-Hein, Klaus H.},
+  title   = {{nnU-Net}: a self-configuring method for deep learning-based biomedical image segmentation},
+  journal = {Nature Methods},
+  volume  = {18},
+  pages   = {203--211},
+  year    = {2021},
+  doi     = {10.1038/s41592-020-01008-z},
+  url     = {https://doi.org/10.1038/s41592-020-01008-z}
+}
+```
+
+The evaluation code also builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiSeg); please acknowledge the original work as appropriate. The **19-model Zenodo archive** (version-specific DOI: **TODO**) and planned **software archive** (DOI: **TODO**) can be cited after release using their Zenodo-generated citations.
 
 ## Reproducibility and scope
 
