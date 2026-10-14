@@ -22,10 +22,11 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 
 | Resource | Link |
 |----------|------|
-| Benchmarking paper | Citation and DOI to be added upon publication |
+| Benchmarking paper | *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT* (submitted manuscript; citation and DOI: TODO) |
+| Scientific Data publication (dataset description) | [doi:10.1038/s41597-026-08061-x](https://doi.org/10.1038/s41597-026-08061-x) |
 | Dataset (TCIA, Spinal-Multiple-Myeloma-SEG) | [doi:10.7937/k4qv-hh78](https://doi.org/10.7937/k4qv-hh78) |
-| Trained models for the dataset/annotation pipeline | Public Zenodo record/DOI to be added after verification |
-| Trained models and supporting materials for this benchmark | Zenodo record/DOI to be added upon release |
+| Trained models for the dataset/annotation pipeline | [Zenodo record 18598645](https://zenodo.org/records/18598645) |
+| Trained models and supporting materials for this benchmark | Zenodo record/DOI: TODO (19 models and `splits_final.json`; to be added upon release) |
 | Dataset / annotation pipeline code and models | [MISAG-BUT/Spinal-Multiple-Myeloma-SEG](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG) |
 | End-to-end prediction on new NIfTI data | [run_prediction_of_nnUNet_networks_on_new_data.py](https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG/blob/main/run_prediction_of_nnUNet_networks_on_new_data.py) |
 | nnU-Net | [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet) |
@@ -180,13 +181,14 @@ Training (nnU-Net): NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs (76, 4 and
 
 ## Citation
 
-The citation and DOI for the benchmarking paper will be added upon publication.
+If you use this repository, its evaluation results, or the associated trained models in your research, please cite the **Scientific Data publication** describing the source dataset and the **TCIA dataset** itself. Once the benchmarking paper is published, please also cite that paper for the spectral-reconstruction comparison and the 19-model benchmark.
 
-Dataset:
+- **Scientific Data publication:** Dataset description article (2026). **Scientific Data**. https://doi.org/10.1038/s41597-026-08061-x
+- **TCIA dataset:** Nohel, M., Válek, V., Rohan, T., Štork, M., Jakubíček, R., Chmelík, J., & Dostál, M. (2026). *Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG)* (Version 1) [Dataset]. The Cancer Imaging Archive. https://doi.org/10.7937/k4qv-hh78
+- **Benchmarking paper (TODO):** Nohel, M., Valek, V., Jakubicek, R., Dostal, M., & Chmelik, J. *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Journal, year, volume, pages, DOI: **TODO — add after publication**.
+- **nnU-Net:** Isensee, F., Jaeger, P. F., Kohl, S. A. A., Petersen, J., & Maier-Hein, K. H. (2021). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. *Nature Methods*, 18, 203–211. https://doi.org/10.1038/s41592-020-01008-z
 
-> Nohel, M., Válek V., Rohan T., Štork M., Jakubíček R., Chmelík J., Dostál M. (2026) **Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG) (Version 1) [Dataset]**. The Cancer Imaging Archive. https://doi.org/10.7937/k4qv-hh78
-
-When using this repository, please cite the benchmarking paper once published, the dataset citation above, and the underlying nnU-Net and LongiSeg methods as appropriate (see their respective repositories).
+The lesion-wise evaluation implementation builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiSeg); please also acknowledge or cite that project as appropriate for the methods you reuse. When the Zenodo archive of the 19 trained models is released, cite its specific version if you use those model weights (archive DOI: **TODO**). A separate archived release of this analysis repository is planned (software archive DOI: **TODO**).
 
 ## Reproducibility and scope
 
