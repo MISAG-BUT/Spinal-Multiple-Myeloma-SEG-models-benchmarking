@@ -191,7 +191,7 @@ If you use this repository or its results, please cite the relevant publications
 
 ### Dataset paper (*Scientific Data*)
 
-Nohel, M., Valek, V., Rohan, T., Stork, M., Jakubicek, R., Chmelik, J., Dostal, M. (2026).  
+Nohel, M., Valek, V., Rohan, T., Stork, M., Jakubicek, R., Chmelik, J., Dostal, M. (2026).
 **Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT**.  
 *Scientific Data*.  
 https://doi.org/10.1038/s41597-026-08061-x
@@ -209,7 +209,7 @@ https://doi.org/10.1038/s41597-026-08061-x
 
 ### Dataset (TCIA)
 
-Nohel, M., Valek, V., Rohan, T., Stork, M., Jakubicek, R., Chmelik, J., Dostal, M. (2026).  
+Nohel, M., Valek, V., Rohan, T., Stork, M., Jakubicek, R., Chmelik, J., Dostal, M. (2026).
 **Segmentation of spinal multiple myeloma lesions in dual-energy CT (Spinal-Multiple-Myeloma-SEG) (Version 1) [Dataset].**  
 *The Cancer Imaging Archive*.  
 https://doi.org/10.7937/k4qv-hh78
@@ -229,7 +229,7 @@ https://doi.org/10.7937/k4qv-hh78
 
 ### Benchmarking paper (forthcoming)
 
-Nohel, M., Valek, V., Jakubicek, R., Dostal, M., Chmelik, J. (TODO).  
+Nohel, M., Valek, V., Jakubicek, R., Dostal, M., Chmelik, J. (TODO).
 **Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT.**  
 *Journal and DOI: TODO (not yet published).*
 
