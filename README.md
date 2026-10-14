@@ -209,8 +209,6 @@ https://doi.org/10.1038/s41597-026-08061-x
   DOI = {10.1038/s41597-026-08061-x},
   URL = {https://www.nature.com/articles/s41597-026-08061-x},
 }
-
-}
 ```
 
 ### Dataset (TCIA)
