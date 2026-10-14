@@ -198,12 +198,18 @@ https://doi.org/10.1038/s41597-026-08061-x
 
 ```bibtex
 @article{nohel2026spinalmm,
-  author  = {Nohel, Michal and V{\'a}lek, Vlastimil and Rohan, T. and {\v S}tork, M. and Jakub{\'i}{\v c}ek, Roman and Chmel{\'i}k, Jiri and Dost{\'a}l, Marek},
-  title   = {{Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT}},
+  author = {Michal Nohel and Vlastimil Valek and Tomas Rohan and Martin Stork and Roman Jakubicek and Jiri Chmelik and Marek Dostal},
   journal = {Scientific Data},
-  year    = {2026},
-  doi     = {10.1038/s41597-026-08061-x},
-  url     = {https://doi.org/10.1038/s41597-026-08061-x}
+  title = {Spinal-Multiple-Myeloma-SEG: Segmentation of spinal multiple myeloma lesions in dual-energy CT},
+  publisher = {Springer Science and Business Media LLC},
+  year = {2026-8-11},
+  ISSN = {2052-4463},
+  medium = {online},
+  accessed = {2026-08-18},
+  DOI = {10.1038/s41597-026-08061-x},
+  URL = {https://www.nature.com/articles/s41597-026-08061-x},
+}
+
 }
 ```
 
