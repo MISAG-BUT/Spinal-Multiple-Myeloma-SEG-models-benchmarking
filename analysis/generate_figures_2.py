@@ -74,6 +74,20 @@ IOU_F1_SUMMARY_FILE = os.path.join(
     "iou_threshold_f1_summary.csv",
 )
 
+
+def save_figure(figure, output_path):
+    output_stem, _ = os.path.splitext(output_path)
+    for extension in ("png", "eps", "svg"):
+        figure_path = f"{output_stem}.{extension}"
+        figure.savefig(
+            figure_path,
+            format=extension,
+            dpi=600,
+            bbox_inches="tight",
+        )
+        print(f"Saved: {figure_path}")
+
+
 MODEL_IDS = list(range(700, 719))
 GROUP_COLORS = {
     "LOO": "#72B0F1",
@@ -501,9 +515,8 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y
     )
     figure.tight_layout(rect=[0, 0, 0.86, 1])
     output_path = os.path.join(OUTPUT_DIR, output_filename)
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_loo_difference_plot(df, zero_tests=None):
@@ -601,9 +614,8 @@ def save_loo_difference_plot(df, zero_tests=None):
     output_dir = os.path.join(OUTPUT_DIR, "loo_difference_from_gt")
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "loo_vs_all_together_Dice_F1_differences.png")
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_lesion_size_threshold_plot(df):
@@ -703,9 +715,8 @@ def save_lesion_size_threshold_plot(df):
 
     axis.set_position([0.08, 0.16, 0.56, 0.76])
     output_path = os.path.join(OUTPUT_DIR, "lesion_size_thresholds_Dice_F1_boxplot.png")
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_iou_threshold_f1_plot():
@@ -763,11 +774,9 @@ def save_iou_threshold_f1_plot():
     axis.set_ylim(0, 1)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(loc="best", frameon=False)
-
     figure.tight_layout()
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_feature_importance_plots(threshold_label, importance_df):
@@ -797,9 +806,8 @@ def save_feature_importance_plots(threshold_label, importance_df):
             images_dir,
             f"feature_importance_{threshold_label}_{dataset}.png",
         )
-        figure.savefig(plot_path, dpi=600, bbox_inches="tight")
+        save_figure(figure, plot_path)
         plt.close(figure)
-        print(f"Saved: {plot_path}")
 
     label_map = {
         "Dataset708": "All together",
@@ -866,9 +874,8 @@ def save_feature_importance_plots(threshold_label, importance_df):
             images_dir,
             f"feature_importance_heatmap_{threshold_label}_{metric}.png",
         )
-        figure.savefig(heatmap_path, dpi=600, bbox_inches="tight")
+        save_figure(figure, heatmap_path)
         plt.close(figure)
-        print(f"Saved: {heatmap_path}")
 
 
 def main():

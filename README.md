@@ -168,10 +168,10 @@ uv sync                                            # creates .venv (Python 3.12)
 
 uv run python analysis/generate_tables.py          # statistics + tables -> results/tables   (run first)
 uv run python analysis/generate_figures.py         # figures            -> results/figures
-uv run python analysis/generate_figures_2.py       # larger, bolder figures -> results/figures_2
+uv run python analysis/generate_figures_2.py       # PNG + EPS + SVG -> results/figures_2
 ```
 
-`generate_figures_2.py` is an independent styling variant for reviewing figure readability; it leaves the original figures and script unchanged.
+`generate_figures_2.py` is an independent styling variant for reviewing figure readability; it leaves the original figures and script unchanged. Each figure is saved as PNG, EPS, and SVG in `results/figures_2` (including its subfolders). EPS and SVG are vector formats suitable for editing and LaTeX workflows. EPS does not support transparency, so semi-transparent plot elements are rendered opaque; SVG preserves transparency.
 
 Tables `gpu_analysis/` and `model_configuration/` additionally read the trained-model folders (`debug.json`, `plans.json`); this needs the Zenodo models placed in `$nnUNet_results`:
 
