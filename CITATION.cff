@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+type: software
+title: Spinal-Multiple-Myeloma-SEG models benchmarking
+message: >-
+  If you use this software or its evaluation results, please cite this software
+  using the metadata below. If you also use the trained model weights, cite their
+  separate Zenodo archive: https://doi.org/10.5281/zenodo.19708429.
+authors:
+  - family-names: Nohel
+    given-names: Michal
+  - family-names: Valek
+    given-names: Vlastimil
+  - family-names: Jakubicek
+    given-names: Roman
+  - family-names: Dostal
+    given-names: Marek
+  - family-names: Chmelik
+    given-names: Jiri
+version: 1.0.0
+repository-code: https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG-models-benchmarking
+license: Apache-2.0
+abstract: >-
+  Benchmarking code, evaluation results, figures, and tables for nnU-Net-based
+  multiple myeloma lesion segmentation on dual-energy CT, comparing conventional
+  CT, virtual monoenergetic images, and calcium-suppressed reconstructions.
+  The associated benchmarking manuscript is in preparation and has no DOI.

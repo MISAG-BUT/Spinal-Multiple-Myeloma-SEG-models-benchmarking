@@ -1,6 +1,6 @@
 [project]
 name = "spinal-mm-analyses"
-version = "0.1.0"
+version = "1.0.0"
 description = "Analysis code and results for multi-channel dual-energy CT segmentation of spinal multiple myeloma lesions"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Only needed for training / inference / evaluation (see environment/README.md for the CUDA-specific torch install)
+# Only needed for training / inference / evaluation (see environment/setup_nnunet_env.sh for the CUDA-specific torch install)
 nnunet = [
     "torch>=2.6",
     "nnunetv2==2.6.4",

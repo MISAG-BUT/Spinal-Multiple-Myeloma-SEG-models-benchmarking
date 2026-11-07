@@ -36,7 +36,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 |----------|---------------|
 | Benchmarking manuscript | *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Manuscript in preparation for submission to *Medical Image Analysis (MEDIA)*. |
 | Trained models (Datasets 700–718; five folds each) | [Zenodo model release — DOI: 10.5281/zenodo.19708429](https://doi.org/10.5281/zenodo.19708429) (also includes `splits_final.json`). |
-| Benchmarking scripts, evaluation outputs and figures | This repository; see [Repository structure](#repository-structure). |
+| Benchmarking scripts, evaluation outputs and figures | Scripts in this repository; evaluation outputs, figures and tables under [`results/`](results/). See [Repository structure](#repository-structure). |
 
 ### Original dataset and associated resources
 
@@ -160,7 +160,9 @@ Use corresponding ConvCT and VMI 40 keV volumes in NIfTI format, oriented in RAS
 
 ## Quick start: reproduce tables and figures (CPU only)
 
-The evaluation results are included in `results/`, so the tables and figures can be regenerated without GPU, data or models.
+The evaluation results are included in `results/`, so evaluation-based tables and figures can be regenerated without a GPU or source imaging data. The full `generate_tables.py` run also requires trained-model metadata for the GPU analysis tables (see below).
+
+Run the commands below from the repository root. The shell setup and GPU workflows use Bash (for example, on Linux or WSL).
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh     # install uv (https://docs.astral.sh/uv/)
@@ -207,7 +209,7 @@ Training (nnU-Net) used NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs. Infer
 
 ## Citation
 
-If you use this repository or its results, please cite the relevant publications and dataset below. The associated benchmarking manuscript is in preparation for submission to *Medical Image Analysis (MEDIA)* and is not yet a published citable resource.
+If you use this repository or its results, please cite this software using [`CITATION.cff`](CITATION.cff) (version 1.0.0), as well as the relevant publications and dataset below. Cite the separately archived trained model weights when applicable. This software repository will receive its own Zenodo DOI after the first GitHub release; the model-weights DOI must not be used as its software DOI. The associated benchmarking manuscript is in preparation for submission to *Medical Image Analysis (MEDIA)* and is not yet a published citable resource.
 
 ### Dataset paper (*Scientific Data*)
 
@@ -299,7 +301,7 @@ The evaluation code also builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiS
 
 ## Reproducibility and scope
 
-The `results/` directory contains stored evaluation outputs used to regenerate the published tables and figures. Regenerating these summaries from the stored results is different from independently reproducing the original training, cross-validation inference and lesion evaluation, which additionally require the source data, trained models, compatible software and the documented fold split. Models and scripts are provided for research use; they have not been externally validated for clinical deployment.
+The `results/` directory contains stored evaluation outputs used to regenerate the benchmarking tables and figures. Regenerating these summaries from the stored results is different from independently reproducing the original training, cross-validation inference and lesion evaluation, which additionally require the source data, trained models, compatible software and the documented fold split. Models and scripts are provided for research use; they have not been externally validated for clinical deployment.
 
 ## License
 
