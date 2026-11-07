@@ -17,6 +17,8 @@ authors:
   - family-names: Chmelik
     given-names: Jiri
 version: 1.0.0
+doi: 10.5281/zenodo.24035616
+url: https://doi.org/10.5281/zenodo.24035616
 repository-code: https://github.com/MISAG-BUT/Spinal-Multiple-Myeloma-SEG-models-benchmarking
 license: Apache-2.0
 abstract: >-

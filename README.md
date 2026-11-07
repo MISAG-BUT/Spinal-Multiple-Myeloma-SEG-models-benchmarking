@@ -35,6 +35,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 | Resource | Link / status |
 |----------|---------------|
 | Benchmarking manuscript | *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Manuscript in preparation for submission to *Medical Image Analysis (MEDIA)*. |
+| Benchmarking software and numerical results | This GitHub repository; [Zenodo software archive — DOI: 10.5281/zenodo.24035616](https://doi.org/10.5281/zenodo.24035616), an immutable snapshot of release `v1.0.0`. Publication figures and trained model weights are excluded from the software archive. |
 | Trained models (Datasets 700–718; five folds each) | [Zenodo model release — DOI: 10.5281/zenodo.19708429](https://doi.org/10.5281/zenodo.19708429) (also includes `splits_final.json`). |
 | Benchmarking scripts and numerical outputs | Evaluation results and tables under [`results/`](results/); figure-generation scripts under [`analysis/`](analysis/). Publication figures are intentionally excluded from the release archive and can be regenerated from these scripts and numerical results. |
 
@@ -212,7 +213,26 @@ Training (nnU-Net) used NVIDIA A40, NVIDIA L40 and NVIDIA Tesla V100 GPUs. Infer
 
 ## Citation
 
-If you use this repository or its results, please cite this software using [`CITATION.cff`](CITATION.cff) (version 1.0.0), as well as the relevant publications and dataset below. Cite the separately archived trained model weights when applicable. This software repository will receive its own Zenodo DOI after the first GitHub release; the model-weights DOI must not be used as its software DOI. The associated benchmarking manuscript is in preparation for submission to *Medical Image Analysis (MEDIA)* and is not yet a published citable resource.
+If you use this repository or its results, please cite the [benchmarking software archive (DOI: 10.5281/zenodo.24035616)](https://doi.org/10.5281/zenodo.24035616) using [`CITATION.cff`](CITATION.cff) (version 1.0.0) or the official BibTeX below, as well as the relevant publications and dataset. Cite the separately archived trained model weights when applicable; their DOI identifies a different archive. The associated benchmarking manuscript is in preparation for submission to *Medical Image Analysis (MEDIA)* and is not yet a published citable resource.
+
+### Benchmarking software (Zenodo)
+
+The software archive is the immutable snapshot of GitHub release `v1.0.0`, including numerical evaluation results under `results/` and the figure-generation script. It excludes publication figures and trained model weights.
+
+Official software BibTeX exported from Zenodo:
+
+```bibtex
+@software{nohel_2026_24035616,
+  author       = {Nohel, Michal and Valek, Vlastimil and Jakubicek, Roman and Dostál, Marek and Chmelik, Jiri},
+  title        = {Spinal-Multiple-Myeloma-SEG models benchmarking},
+  month        = nov,
+  year         = 2026,
+  publisher    = {Brno University of Technology},
+  version      = {v1.0.0},
+  doi          = {10.5281/zenodo.24035616},
+  url          = {https://doi.org/10.5281/zenodo.24035616},
+}
+```
 
 ### Dataset paper (*Scientific Data*)
 
