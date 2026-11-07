@@ -5,4 +5,5 @@ __pycache__/
 third_party_src/
 data/
 nnUNet_results/
-/results/figures/
+/results/figures/*
+!/results/figures/.gitkeep
