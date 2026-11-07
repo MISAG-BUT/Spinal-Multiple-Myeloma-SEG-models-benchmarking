@@ -1,6 +1,6 @@
 # Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT
 
-> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and **the trained weights for all 19 benchmark models are distributed separately on Zenodo (record pending publication)**. The patient-grouped cross-validation split is included in `results/splits_final.json`.
+> **Note:** this repository is a companion to the paper. It documents **how the reported results were generated** (inference, evaluation, statistics, figures) and **how to run the trained nnU-Net models** in general. It is not a training tutorial: the models were trained with standard [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) (`3d_fullres`, 5-fold cross-validation) and **the trained weights for all 19 benchmark models are available in a separate [Zenodo release (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429)**. The patient-grouped cross-validation split is included in `results/splits_final.json`.
 
 Code, trained-model configurations, and results accompanying the paper *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*.
 The study evaluates how different dual-energy CT image series (conventional CT, virtual monoenergetic images, calcium-suppressed images) contribute to nnU-Net segmentation of osteolytic spinal multiple myeloma (MM) lesions: 19 models (Datasets 700–718), 5-fold cross-validation, input-channel ablations (leave-one-out, single-input, zero-input), lesion-size and IoU-threshold sensitivity analyses, statistical tests and computational cost.
@@ -24,7 +24,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 
 ## Trained models and training data format
 
-**Download the trained models:** The weights for **all 19 nnU-Net v2 models (Datasets 700–718), including five trained folds per model**, are distributed in a **separate Zenodo archive**: **a separate Zenodo record (pending publication)**. **The trained weights are not stored in this GitHub repository.** The Zenodo archive also contains `splits_final.json`.
+**Download the trained models:** The weights for **all 19 nnU-Net v2 models (Datasets 700–718), including five trained folds per model**, are available in the **[Zenodo model release (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429)**. **The trained weights are not stored in this GitHub repository.** The Zenodo archive also contains `splits_final.json`.
 
 **Training data format:** All 19 models were **trained on 3D NIfTI volumes (`.nii.gz`)**, not directly on DICOM files. Each CT reconstruction was provided as a separate nnU-Net input channel, together with a **binary vertebral segmentation mask as the required final input channel**. For inference, supply aligned NIfTI files in the exact channel order specified by each model's `dataset.json` (see [Input data and output segmentation](#input-data-and-output-segmentation) and [Run a trained model on new data](#run-a-trained-model-on-new-data)).
 
@@ -35,7 +35,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 | Resource | Link / status |
 |----------|---------------|
 | Benchmarking manuscript | *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Manuscript in preparation for submission to *Medical Image Analysis (MEDIA)*. |
-| Trained models (Datasets 700–718; five folds each) | Separate Zenodo record, pending publication (also includes `splits_final.json`). |
+| Trained models (Datasets 700–718; five folds each) | [Zenodo model release — DOI: 10.5281/zenodo.19708429](https://doi.org/10.5281/zenodo.19708429) (also includes `splits_final.json`). |
 | Benchmarking scripts, evaluation outputs and figures | This repository; see [Repository structure](#repository-structure). |
 
 ### Original dataset and associated resources
@@ -103,7 +103,7 @@ The model predicts a separate binary multiple myeloma lesion segmentation (`0` =
 
 ## Run a trained model on new data
 
-After the model archive is published, download the trained models from its Zenodo record (see [Resources](#resources)) and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
+Download the required trained model archive from [Zenodo (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429) (see [Resources](#resources)) and place them in a folder, e.g. `nnUNet_results/Dataset708_MM_Lesion_seg_all_together/nnUNetTrainer__nnUNetPlans__3d_fullres`
 (contains `fold_0 … fold_4`, `plans.json`, `dataset.json`). Install nnU-Net ([installation instructions](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/installation_instructions.md); we used `nnunetv2 2.6.4`):
 
 ```bash
@@ -192,7 +192,7 @@ Use `MM_RESULTS_DIR=/other/path` to write/read results elsewhere.
    source config.sh                                  # nnUNet_raw / nnUNet_preprocessed / nnUNet_results
    ```
 2. **Data and models** – the data are from [TCIA](https://doi.org/10.7937/k4qv-hh78), converted to nnU-Net format (`Dataset700 … Dataset718` in `$nnUNet_raw`, channels as in the table above, with a binary vertebral mask (`0` = background, `1` = vertebrae) as the last input channel; lesion ground-truth labels are separate (`background=0`, `Lesions=1`)).
-   Trained models (`$nnUNet_results`) are distributed separately; see the separate Zenodo model archive when published. The cross-validation split is also included in `results/splits_final.json` in this repository. Ground-truth labels per fold are expected in `$nnUNet_raw/MM_GT_DATA/labelsTr_fold_{0..4}`.
+   Trained models (`$nnUNet_results`) are distributed separately via [Zenodo (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429). The cross-validation split is also included in `results/splits_final.json` in this repository. Ground-truth labels per fold are expected in `$nnUNet_raw/MM_GT_DATA/labelsTr_fold_{0..4}`.
    Training itself is standard nnU-Net and is not part of this repository.
 3. **Inference** – `bash inference/run_predictions.sh` (predicts the validation cases of every fold, logs time and GPU utilization into `results/`).
 4. **Evaluation** – `bash evaluation/run_evaluation.sh` (Dice, NSD, HD95, lesion-wise F1, …; IoU threshold 0.1) and
@@ -247,6 +247,34 @@ https://doi.org/10.7937/k4qv-hh78
 }
 ```
 
+### Trained benchmarking models (Zenodo)
+
+Nohel, M., Valek, V., Jakubicek, R., Dostál, M., Chmelik, J. (2026).  
+**Spinal-Multiple-Myeloma-SEG_nnUNet_models_benchmarking** (Version 1.0.0) [Trained models].  
+*Brno University of Technology*.  
+https://doi.org/10.5281/zenodo.19708429
+
+Official BibTeX exported from Zenodo:
+
+```bibtex
+@misc{nohel_2026_19708429,
+  author       = {Nohel, Michal and
+                  Valek, Vlastimil and
+                  Jakubicek, Roman and
+                  Dostál, Marek and
+                  Chmelik, Jiri},
+  title        = {Spinal-Multiple-Myeloma-
+                   SEG\_nnUNet\_models\_benchmarking
+                  },
+  month        = oct,
+  year         = 2026,
+  publisher    = {Brno University of Technology},
+  version      = {1.0.0},
+  doi          = {10.5281/zenodo.19708429},
+  url          = {https://doi.org/10.5281/zenodo.19708429},
+}
+```
+
 ### Benchmarking manuscript (in preparation)
 
 Nohel, M., Valek, V., Jakubicek, R., Dostal, M., Chmelik, J.  
@@ -273,7 +301,7 @@ https://doi.org/10.1038/s41592-020-01008-z
 }
 ```
 
-The evaluation code also builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiSeg); please acknowledge the original work as appropriate. Once the 19-model Zenodo archive is published, cite its Zenodo record and version-specific DOI when using the trained weights.
+The evaluation code also builds on [LongiSeg](https://github.com/MIC-DKFZ/LongiSeg); please acknowledge the original work as appropriate. When using the trained benchmark weights, cite the [Zenodo model release (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429).
 
 ## Reproducibility and scope
 
