@@ -7,8 +7,11 @@ First official public release of **Spinal-Multiple-Myeloma-SEG models benchmarki
 - Five-fold cross-validation inference scripts, channel-ablation workflows,
   lesion-wise evaluation, lesion-size and IoU-threshold sensitivity analyses,
   statistical analysis, and inference time and GPU usage summaries.
-- Stored evaluation outputs, cross-validation splits, figures, and tables under
-  `results/`, with analysis scripts and environment setup instructions.
+- Numerical benchmarking results, evaluation tables, and cross-validation splits
+  under `results/`, with figure-generation scripts and environment setup instructions.
+- Publication figures are intentionally excluded from the release archive and
+  can be regenerated using the provided scripts and numerical results. The
+  conceptual workflow illustration remains included under `assets/`.
 - Software citation metadata in `CITATION.cff`; code licensed under Apache-2.0.
 
 The 19 trained benchmarking models (five folds each) are archived separately on

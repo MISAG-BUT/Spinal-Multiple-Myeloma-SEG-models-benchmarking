@@ -4,3 +4,4 @@ __pycache__/
 .venv-nnunet/
 third_party_src/
 data/
+nnUNet_results/

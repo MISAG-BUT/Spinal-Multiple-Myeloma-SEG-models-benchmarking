@@ -36,7 +36,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 |----------|---------------|
 | Benchmarking manuscript | *Benchmarking Spectral Reconstructions (VMI and Calcium-Suppressed) for Multiple Myeloma Segmentation on Dual-Energy CT*. Manuscript in preparation for submission to *Medical Image Analysis (MEDIA)*. |
 | Trained models (Datasets 700–718; five folds each) | [Zenodo model release — DOI: 10.5281/zenodo.19708429](https://doi.org/10.5281/zenodo.19708429) (also includes `splits_final.json`). |
-| Benchmarking scripts, evaluation outputs and figures | Scripts in this repository; evaluation outputs, figures and tables under [`results/`](results/). See [Repository structure](#repository-structure). |
+| Benchmarking scripts and numerical outputs | Evaluation results and tables under [`results/`](results/); figure-generation scripts under [`analysis/`](analysis/). Publication figures are intentionally excluded from the release archive and can be regenerated from these scripts and numerical results. |
 
 ### Original dataset and associated resources
 
@@ -64,16 +64,17 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
 ├── third_party/longiseg/          # patch + docs for our LongiSeg modifications
 ├── inference/                     # 5-fold / zero-input inference with timing and GPU logging
 ├── evaluation/                    # lesion-wise evaluation (LongiSeg_evaluate_folder), IoU-threshold analysis
-├── analysis/                      # statistics, tables, figures, GPU usage, model configurations
+├── analysis/                      # statistics, tables, figure-generation scripts, GPU usage, model configurations
 └── results/
     ├── full_models/               # per-fold evaluation JSONs of models 700-718
     ├── zero_input_models/         # per-fold evaluation JSONs of the zero-input (channel ablation) analysis
     ├── iou_threshold_analysis_full_models/
     ├── gpu_logs/, inference_logs/ # nvidia-smi and runtime logs
     ├── splits_final.json          # 5-fold patient-level cross-validation split
-    ├── tables/                    # all tables (CSV + XLSX), incl. statistical_analysis/ and model_configuration/
-    └── figures/                   # final figures
+    └── tables/                    # tables (CSV + XLSX), incl. statistical_analysis/ and model_configuration/
 ```
+
+Publication figures are intentionally excluded from the release archive. The figure-generation scripts and numerical inputs remain available; running the scripts creates `results/figures/` and `results/figures_2/`. The conceptual workflow illustration in `assets/benchmark_workflow.png` remains included.
 
 Evaluation JSONs exist for three lesion-size filters: `longi_summary_all`, `longi_summary_larger_than_0_3_cubic_cm`, `longi_summary_larger_than_0_5_cubic_cm`.
 ## Models
@@ -160,7 +161,7 @@ Use corresponding ConvCT and VMI 40 keV volumes in NIfTI format, oriented in RAS
 
 ## Quick start: reproduce tables and figures (CPU only)
 
-The evaluation results are included in `results/`, so evaluation-based tables and figures can be regenerated without a GPU or source imaging data. The full `generate_tables.py` run also requires trained-model metadata for the GPU analysis tables (see below).
+Numerical benchmarking results and evaluation tables are included in `results/`; publication figures are intentionally excluded from the release archive and can be regenerated using the provided figure-generation scripts and numerical results, without a GPU or source imaging data. The figure scripts can use the included precomputed statistical tables directly. The full `generate_tables.py` run also requires trained-model metadata for the GPU analysis tables (see below).
 
 Run the commands below from the repository root. The shell setup and GPU workflows use Bash (for example, on Linux or WSL).
 
@@ -168,14 +169,14 @@ Run the commands below from the repository root. The shell setup and GPU workflo
 curl -LsSf https://astral.sh/uv/install.sh | sh     # install uv (https://docs.astral.sh/uv/)
 uv sync                                            # creates .venv (Python 3.12) from uv.lock
 
-uv run python analysis/generate_tables.py          # statistics + tables -> results/tables   (run first)
+uv run python analysis/generate_tables.py          # regenerate tables; requires model metadata (see below)
 uv run python analysis/generate_figures.py         # figures            -> results/figures
 uv run python analysis/generate_figures_2.py       # PNG + EPS + SVG -> results/figures_2
 ```
 
-`generate_figures_2.py` is an independent styling variant for reviewing figure readability; it leaves the original figures and script unchanged. Each figure is saved as PNG, EPS, and SVG in `results/figures_2` (including its subfolders). EPS and SVG are vector formats suitable for editing and LaTeX workflows. EPS does not support transparency, so semi-transparent plot elements are rendered opaque; SVG preserves transparency.
+`generate_figures_2.py` is an independent styling variant for reviewing figure readability; it writes to a separate output directory. Each figure is saved as PNG, EPS, and SVG in `results/figures_2` (including its subfolders). EPS and SVG are vector formats suitable for editing and LaTeX workflows. EPS does not support transparency, so semi-transparent plot elements are rendered opaque; SVG preserves transparency.
 
-Tables `gpu_analysis/` and `model_configuration/` additionally read the trained-model folders (`debug.json`, `plans.json`); this needs the Zenodo models placed in `$nnUNet_results`:
+Tables `gpu_analysis/` and `model_configuration/` additionally read the trained-model folders (`debug.json`, `plans.json`, and training logs where available). Set `nnUNet_results` explicitly to the absolute parent directory containing the extracted `Dataset700...` through `Dataset718...` model folders, in the same shell before running Python or Bash workflows. This avoids the differing defaults in `config.py` (`./nnUNet_results`) and `config.sh` (`./data/nnUNet_results`):
 
 ```bash
 export nnUNet_results=/path/to/nnUNet_results
@@ -191,17 +192,20 @@ Use `MM_RESULTS_DIR=/other/path` to write/read results elsewhere.
    ```bash
    bash environment/setup_nnunet_env.sh cu126        # CUDA wheel tag of your system
    source .venv-nnunet/bin/activate
+   export nnUNet_results=/path/to/nnUNet_results      # absolute parent of extracted Dataset folders
    source config.sh                                  # nnUNet_raw / nnUNet_preprocessed / nnUNet_results
    ```
 2. **Data and models** – the data are from [TCIA](https://doi.org/10.7937/k4qv-hh78), converted to nnU-Net format (`Dataset700 … Dataset718` in `$nnUNet_raw`, channels as in the table above, with a binary vertebral mask (`0` = background, `1` = vertebrae) as the last input channel; lesion ground-truth labels are separate (`background=0`, `Lesions=1`)).
    Trained models (`$nnUNet_results`) are distributed separately via [Zenodo (DOI: 10.5281/zenodo.19708429)](https://doi.org/10.5281/zenodo.19708429). The cross-validation split is also included in `results/splits_final.json` in this repository. Ground-truth labels per fold are expected in `$nnUNet_raw/MM_GT_DATA/labelsTr_fold_{0..4}`.
    Training itself is standard nnU-Net and is not part of this repository.
-3. **Inference** – `bash inference/run_predictions.sh` (predicts the validation cases of every fold, logs time and GPU utilization into `results/`).
+3. **Inference** – `bash inference/run_predictions.sh` (predicts the validation cases of every fold, logs time and GPU utilization into `results/`). Zero-input inference requires prepared zeroed-channel NIfTI inputs under `$nnUNet_raw/MM_Data_for_zero_input_analysis/<dataset>/fold_<0..4>/imagesTs`, with dataset names listed in the script. The script consumes these inputs but does not create or zero them. No preparation implementation is included, so the exact preparation procedure cannot be established from this repository. Inputs must still satisfy the documented channel-order and geometry requirements.
 4. **Evaluation** – `bash evaluation/run_evaluation.sh` (Dice, NSD, HD95, lesion-wise F1, …; IoU threshold 0.1) and
    `bash evaluation/run_iou_threshold_analysis.sh` (IoU 0.05–0.90). For the lesion-size variants see [third_party/longiseg/README.md](third_party/longiseg/README.md).
-5. **Analysis** – the two commands from *Quick start*.
+5. **Analysis** – the table and figure-generation commands from *Quick start*.
 
 All paths are configured centrally in [config.py](config.py) / [config.sh](config.sh).
+
+**Dependency-version limitations:** `uv.lock` records the analysis environment. The GPU setup pins nnU-Net and LongiSeg source commits, but installs Torch, torchvision, and analysis dependencies without exact version pins; a fresh installation may differ from the environment used for the benchmark. The tested versions recorded in `environment/setup_nnunet_env.sh` are historical reference points, not a guarantee for every CUDA wheel tag. The LongiSeg patch requires `scikit-image >= 0.26` (results used 0.26.0), which the setup does not explicitly enforce; verify the installed version before evaluation. See the [LongiSeg notes](third_party/longiseg/README.md#notes).
 
 ## Hardware
 
