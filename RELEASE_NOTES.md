@@ -8,9 +8,10 @@ First official public release of **Spinal-Multiple-Myeloma-SEG models benchmarki
   lesion-wise evaluation, lesion-size and IoU-threshold sensitivity analyses,
   statistical analysis, and inference time and GPU usage summaries.
 - Numerical benchmarking results, evaluation tables, and cross-validation splits
-  under `results/`, with figure-generation scripts and environment setup instructions.
+  under `results/`, with `analysis/generate_figures.py` and environment setup instructions.
 - Publication figures are intentionally excluded from the release archive and
-  can be regenerated using the provided scripts and numerical results. The
+  can be regenerated as PNG, EPS, and SVG under `results/figures/` using the
+  figure-generation script and numerical results. Generated figures are ignored by Git. The
   conceptual workflow illustration remains included under `assets/`.
 - Software citation metadata in `CITATION.cff`; code licensed under Apache-2.0.
 

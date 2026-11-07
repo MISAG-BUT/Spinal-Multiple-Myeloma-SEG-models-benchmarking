@@ -74,7 +74,7 @@ The study evaluates how different dual-energy CT image series (conventional CT, 
     └── tables/                    # tables (CSV + XLSX), incl. statistical_analysis/ and model_configuration/
 ```
 
-Publication figures are intentionally excluded from the release archive. The figure-generation scripts and numerical inputs remain available; running the scripts creates `results/figures/` and `results/figures_2/`. The conceptual workflow illustration in `assets/benchmark_workflow.png` remains included.
+Publication figures are intentionally excluded from the release archive. The figure-generation script and numerical inputs remain available; running `analysis/generate_figures.py` creates `results/figures/`, which is ignored by Git. The conceptual workflow illustration in `assets/benchmark_workflow.png` remains included.
 
 Evaluation JSONs exist for three lesion-size filters: `longi_summary_all`, `longi_summary_larger_than_0_3_cubic_cm`, `longi_summary_larger_than_0_5_cubic_cm`.
 ## Models
@@ -161,7 +161,7 @@ Use corresponding ConvCT and VMI 40 keV volumes in NIfTI format, oriented in RAS
 
 ## Quick start: reproduce tables and figures (CPU only)
 
-Numerical benchmarking results and evaluation tables are included in `results/`; publication figures are intentionally excluded from the release archive and can be regenerated using the provided figure-generation scripts and numerical results, without a GPU or source imaging data. The figure scripts can use the included precomputed statistical tables directly. The full `generate_tables.py` run also requires trained-model metadata for the GPU analysis tables (see below).
+Numerical benchmarking results and evaluation tables are included in `results/`; publication figures are intentionally excluded from the release archive and can be regenerated using the provided figure-generation script and numerical results, without a GPU or source imaging data. The figure script can use the included precomputed statistical tables directly. The full `generate_tables.py` run also requires trained-model metadata for the GPU analysis tables (see below).
 
 Run the commands below from the repository root. The shell setup and GPU workflows use Bash (for example, on Linux or WSL).
 
@@ -170,11 +170,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh     # install uv (https://docs.a
 uv sync                                            # creates .venv (Python 3.12) from uv.lock
 
 uv run python analysis/generate_tables.py          # regenerate tables; requires model metadata (see below)
-uv run python analysis/generate_figures.py         # figures            -> results/figures
-uv run python analysis/generate_figures_2.py       # PNG + EPS + SVG -> results/figures_2
+uv run python analysis/generate_figures.py         # PNG + EPS + SVG -> results/figures
 ```
 
-`generate_figures_2.py` is an independent styling variant for reviewing figure readability; it writes to a separate output directory. Each figure is saved as PNG, EPS, and SVG in `results/figures_2` (including its subfolders). EPS and SVG are vector formats suitable for editing and LaTeX workflows. EPS does not support transparency, so semi-transparent plot elements are rendered opaque; SVG preserves transparency.
+`analysis/generate_figures.py` is the supported figure-generation script and takes no command-line arguments. It reads stored evaluation JSONs and statistical CSV tables under `results/` and saves each figure as PNG, EPS, and SVG under `results/figures/`, preserving its analysis subfolders. Set `MM_RESULTS_DIR` to use another results root for both inputs and outputs. EPS and SVG are vector formats suitable for editing and LaTeX workflows. EPS does not support transparency, so semi-transparent plot elements are rendered opaque; SVG preserves transparency.
 
 Tables `gpu_analysis/` and `model_configuration/` additionally read the trained-model folders (`debug.json`, `plans.json`, and training logs where available). Set `nnUNet_results` explicitly to the absolute parent directory containing the extracted `Dataset700...` through `Dataset718...` model folders, in the same shell before running Python or Bash workflows. This avoids the differing defaults in `config.py` (`./nnUNet_results`) and `config.sh` (`./data/nnUNet_results`):
 

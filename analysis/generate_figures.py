@@ -1,3 +1,5 @@
+"""Generate publication figures from stored numerical benchmarking results."""
+
 import glob
 import json
 import os
@@ -14,6 +16,24 @@ from matplotlib.patches import Patch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config  # noqa: E402
+
+
+plt.rcParams.update({
+    "font.size": 14,
+    "font.weight": "bold",
+    "axes.titlesize": 18,
+    "axes.titleweight": "bold",
+    "axes.labelsize": 16,
+    "axes.labelweight": "bold",
+    "xtick.labelsize": 13,
+    "ytick.labelsize": 13,
+    "xtick.major.width": 1.6,
+    "ytick.major.width": 1.6,
+    "axes.linewidth": 1.5,
+    "lines.linewidth": 2.2,
+    "legend.fontsize": 13,
+    "legend.title_fontsize": 14,
+})
 
 
 ANALYSIS = "longi_summary_all"
@@ -53,6 +73,20 @@ IOU_F1_SUMMARY_FILE = os.path.join(
     "iou_threshold_analysis",
     "iou_threshold_f1_summary.csv",
 )
+
+
+def save_figure(figure, output_path):
+    output_stem, _ = os.path.splitext(output_path)
+    for extension in ("png", "eps", "svg"):
+        figure_path = f"{output_stem}.{extension}"
+        figure.savefig(
+            figure_path,
+            format=extension,
+            dpi=600,
+            bbox_inches="tight",
+        )
+        print(f"Saved: {figure_path}")
+
 
 MODEL_IDS = list(range(700, 719))
 GROUP_COLORS = {
@@ -319,21 +353,21 @@ def draw_boxplot(ax, values, position, color, rng, width=0.34, alpha=1.0, hatch=
     for artist in box["boxes"]:
         artist.set_facecolor(color)
         artist.set_edgecolor("black")
-        artist.set_linewidth(1.2)
+        artist.set_linewidth(2.0)
         artist.set_alpha(alpha)
         if hatch:
             artist.set_hatch(hatch)
     for artist in box["whiskers"] + box["caps"] + box["medians"]:
         artist.set_color("black")
-        artist.set_linewidth(1.2)
+        artist.set_linewidth(2.0)
     ax.scatter(
         [position],
         [np.mean(values)],
         marker="x",
         color="black",
-        s=120,
+        s=150,
         zorder=4,
-        linewidths=1.8,
+        linewidths=2.4,
     )
     jitter_width = min(0.10, width * 0.35)
     jitter = rng.uniform(-jitter_width, jitter_width, size=len(values))
@@ -341,8 +375,8 @@ def draw_boxplot(ax, values, position, color, rng, width=0.34, alpha=1.0, hatch=
         np.full(len(values), position) + jitter,
         values,
         color="black",
-        alpha=0.35,
-        s=12,
+        alpha=0.45,
+        s=20,
         zorder=3,
         linewidths=0,
     )
@@ -398,7 +432,7 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
             [left, left, right, right],
             [y, y + bracket_height, y + bracket_height, y],
             color="black",
-            linewidth=0.8,
+            linewidth=1.8,
             clip_on=False,
         )
         axis.text(
@@ -407,7 +441,8 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
             row.significance,
             ha="center",
             va="bottom",
-            fontsize=8,
+            fontsize=12,
+            fontweight="bold",
             color="black",
             clip_on=False,
         )
@@ -419,7 +454,7 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
 
 def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y_limits=None):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    figure, axis = plt.subplots(figsize=(15, 6))
+    figure, axis = plt.subplots(figsize=(21, 8))
     rng = np.random.default_rng(42)
     dice_offset = -0.21
     f1_offset = 0.21
@@ -432,11 +467,11 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y
         draw_boxplot(axis, subset["Dice"], index + dice_offset, adjust_color(base_color, 1.45), rng)
         draw_boxplot(axis, subset["F1"], index + f1_offset, adjust_color(base_color, 0.65), rng)
 
-    axis.set_xlabel("Model", fontsize=12)
-    axis.set_ylabel("Dice / F1", fontsize=12)
+    axis.set_xlabel("Model", fontsize=16, fontweight="bold")
+    axis.set_ylabel("Dice / F1", fontsize=16, fontweight="bold")
     axis.set_xticks(range(len(model_ids)))
-    axis.set_xticklabels([DATASET_LABELS[dataset_id] for dataset_id in model_ids], rotation=45, ha="right", fontsize=10)
-    axis.tick_params(axis="y", labelsize=11)
+    axis.set_xticklabels([DATASET_LABELS[dataset_id] for dataset_id in model_ids], rotation=45, ha="right", fontsize=13, fontweight="bold")
+    axis.tick_params(axis="y", labelsize=13, width=1.6)
     axis.set_xlim(-0.65, len(model_ids) - 0.35)
     axis.set_ylim(*(y_limits or (-0.02, 1.02)))
     axis.grid(axis="y", linestyle="--", alpha=0.3)
@@ -472,17 +507,16 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y
         loc="upper left",
         bbox_to_anchor=(1.0, 1.0),
         frameon=False,
-        fontsize=10,
-        title_fontsize=10,
+        fontsize=13,
+        title_fontsize=14,
         handlelength=2.5,
         handletextpad=0.5,
         labelspacing=0.45,
     )
     figure.tight_layout(rect=[0, 0, 0.86, 1])
     output_path = os.path.join(OUTPUT_DIR, output_filename)
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_loo_difference_plot(df, zero_tests=None):
@@ -496,7 +530,7 @@ def save_loo_difference_plot(df, zero_tests=None):
         aggfunc="first",
     )
 
-    figure, axis = plt.subplots(figsize=(15, 7.5))
+    figure, axis = plt.subplots(figsize=(17, 8.5))
     rng = np.random.default_rng(42)
     dice_offset = -0.21
     f1_offset = 0.21
@@ -545,23 +579,24 @@ def save_loo_difference_plot(df, zero_tests=None):
                         clip_on=False,
                     )
 
-    axis.set_xlabel("LOO model", fontsize=12)
-    axis.set_ylabel("Score difference (LOO − All together)", fontsize=12)
+    axis.set_xlabel("LOO model", fontsize=16, fontweight="bold")
+    axis.set_ylabel("Score difference (LOO − All together)", fontsize=16, fontweight="bold")
     axis.set_xticks(range(len(loo_ids)))
     axis.set_xticklabels(
         [DATASET_LABELS[dataset_id] for dataset_id in loo_ids],
         rotation=45,
         ha="right",
-        fontsize=10,
+        fontsize=13,
+        fontweight="bold",
     )
-    axis.tick_params(axis="y", labelsize=11)
+    axis.tick_params(axis="y", labelsize=13, width=1.6)
     axis.set_xlim(-0.65, len(loo_ids) - 0.35)
     value_range = max(plotted_values) - min(plotted_values) if plotted_values else 1.0
     lower = min(0.0, min(plotted_values)) if plotted_values else 0.0
     upper = max(0.0, max(plotted_values)) if plotted_values else 1.0
     padding = max(0.01, value_range * 0.01)
     axis.set_ylim(lower - padding, max(upper + padding * 2.5, significance_y + padding * 2))
-    axis.axhline(y=0, color="gray", linestyle="--", linewidth=1, alpha=0.8)
+    axis.axhline(y=0, color="gray", linestyle="--", linewidth=2, alpha=0.8)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(
         handles=[
@@ -572,16 +607,15 @@ def save_loo_difference_plot(df, zero_tests=None):
         loc="upper left",
         bbox_to_anchor=(1.0, 1.0),
         frameon=False,
-        fontsize=10,
-        title_fontsize=10,
+        fontsize=13,
+        title_fontsize=14,
     )
     figure.tight_layout(rect=[0, 0, 0.86, 1])
     output_dir = os.path.join(OUTPUT_DIR, "loo_difference_from_gt")
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "loo_vs_all_together_Dice_F1_differences.png")
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_lesion_size_threshold_plot(df):
@@ -592,14 +626,14 @@ def save_lesion_size_threshold_plot(df):
         "0.5cm": "#2ca02c",
     }
     threshold_labels = {
-        "all": "0 cm$^3$ (all lesions)",
-        "0.3cm": "0.3 cm$^3$",
-        "0.5cm": "0.5 cm$^3$",
+        "all": "0 cm³ (all lesions)",
+        "0.3cm": "0.3 cm³",
+        "0.5cm": "0.5 cm³",
     }
     model_spacing = 1.45
     threshold_offsets = (-0.13, 0.0, 0.13)
     metric_offsets = {"Dice": -0.25, "F1": 0.25}
-    figure, axis = plt.subplots(figsize=(18, 7))
+    figure, axis = plt.subplots(figsize=(20, 8))
     rng = np.random.default_rng(42)
 
     for model_index, model_label in enumerate(model_order):
@@ -624,7 +658,7 @@ def save_lesion_size_threshold_plot(df):
                     hatch="//" if metric == "F1" else None,
                 )
 
-        axis.axvline(model_center, color="gray", linestyle=":", linewidth=0.8, alpha=0.65)
+        axis.axvline(model_center, color="gray", linestyle=":", linewidth=1.5, alpha=0.75)
         for metric, metric_offset in metric_offsets.items():
             axis.text(
                 model_center + metric_offset,
@@ -632,7 +666,7 @@ def save_lesion_size_threshold_plot(df):
                 metric,
                 ha="center",
                 va="bottom",
-                fontsize=10,
+                fontsize=14,
                 fontweight="bold",
             )
 
@@ -640,15 +674,16 @@ def save_lesion_size_threshold_plot(df):
     axis.set_xticks(model_centers)
     axis.set_xticklabels(
         [label.replace(" (", "\n(") for label in model_order],
-        fontsize=9,
+        fontsize=12,
+        fontweight="bold",
     )
-    axis.set_xlabel("Model", fontsize=12)
-    axis.set_ylabel("Dice / F1", fontsize=12)
-    axis.set_title("Dice and F1 by lesion-size threshold", fontsize=14)
+    axis.set_xlabel("Model", fontsize=16, fontweight="bold")
+    axis.set_ylabel("Dice / F1", fontsize=16, fontweight="bold")
+    axis.set_title("Dice and F1 by lesion-size threshold", fontsize=18, fontweight="bold")
     axis.set_xlim(model_centers[0] - 0.62, model_centers[-1] + 0.62)
     axis.set_ylim(0.2, 1.08)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
-    axis.tick_params(axis="y", labelsize=10)
+    axis.tick_params(axis="y", labelsize=13, width=1.6)
 
     threshold_handles = [
         Patch(facecolor=threshold_colors[threshold], edgecolor="black", label=threshold_labels[threshold])
@@ -660,8 +695,8 @@ def save_lesion_size_threshold_plot(df):
         loc="upper left",
         bbox_to_anchor=(0.645, 0.94),
         frameon=False,
-        fontsize=9,
-        title_fontsize=9,
+        fontsize=12,
+        title_fontsize=13,
     )
     threshold_legend.set_alignment("left")
     metric_handles = [
@@ -674,15 +709,14 @@ def save_lesion_size_threshold_plot(df):
         loc="upper left",
         bbox_to_anchor=(0.645, 0.55),
         frameon=False,
-        fontsize=9,
-        title_fontsize=9,
+        fontsize=12,
+        title_fontsize=13,
     )
 
     axis.set_position([0.08, 0.16, 0.56, 0.76])
     output_path = os.path.join(OUTPUT_DIR, "lesion_size_thresholds_Dice_F1_boxplot.png")
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_iou_threshold_f1_plot():
@@ -718,7 +752,7 @@ def save_iou_threshold_f1_plot():
         "Dataset718_MM_Lesion_seg_all_CaSupp": "#8c564b",
     }
 
-    figure, axis = plt.subplots(figsize=(12, 5))
+    figure, axis = plt.subplots(figsize=(14, 7))
     for model, model_df in df.groupby("model", sort=False):
         model_df = model_df.sort_values("iou_threshold")
         axis.errorbar(
@@ -726,25 +760,23 @@ def save_iou_threshold_f1_plot():
             model_df["F1_mean"],
             yerr=model_df["F1_std"],
             marker="o",
-            markersize=4,
-            linewidth=1.5,
-            capsize=3,
+            markersize=7,
+            linewidth=2.5,
+            capsize=5,
             color=model_colors.get(model, "#4C78A8"),
             label=model_labels.get(model, model),
         )
 
-    axis.set_title("F1 score versus IoU threshold")
-    axis.set_xlabel("IoU threshold")
-    axis.set_ylabel("F1")
+    axis.set_title("F1 score versus IoU threshold", fontsize=18, fontweight="bold")
+    axis.set_xlabel("IoU threshold", fontsize=16, fontweight="bold")
+    axis.set_ylabel("F1", fontsize=16, fontweight="bold")
     axis.set_xticks(sorted(df["iou_threshold"].unique()))
     axis.set_ylim(0, 1)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(loc="best", frameon=False)
-
     figure.tight_layout()
-    figure.savefig(output_path, dpi=600, bbox_inches="tight")
+    save_figure(figure, output_path)
     plt.close(figure)
-    print(f"Saved: {output_path}")
 
 
 def save_feature_importance_plots(threshold_label, importance_df):
@@ -758,20 +790,24 @@ def save_feature_importance_plots(threshold_label, importance_df):
             "Dice_drop",
             ascending=False,
         )
-        figure, axis = plt.subplots(figsize=(8, 5))
-        axis.bar(subset["zero_input_channel"], subset["Dice_drop"])
-        axis.set_ylabel("Dice drop (importance)")
-        axis.set_xlabel("Removed channel")
-        axis.set_title(f"Channel importance ({threshold_label} — {dataset})")
-        axis.tick_params(axis="x", rotation=45)
+        figure, axis = plt.subplots(figsize=(10, 7))
+        axis.bar(
+            subset["zero_input_channel"],
+            subset["Dice_drop"],
+            edgecolor="black",
+            linewidth=1.5,
+        )
+        axis.set_ylabel("Dice drop (importance)", fontsize=16, fontweight="bold")
+        axis.set_xlabel("Removed channel", fontsize=16, fontweight="bold")
+        axis.set_title(f"Channel importance ({threshold_label} — {dataset})", fontsize=18, fontweight="bold")
+        axis.tick_params(axis="x", rotation=45, width=1.6)
         figure.tight_layout()
         plot_path = os.path.join(
             images_dir,
             f"feature_importance_{threshold_label}_{dataset}.png",
         )
-        figure.savefig(plot_path, dpi=600, bbox_inches="tight")
+        save_figure(figure, plot_path)
         plt.close(figure)
-        print(f"Saved: {plot_path}")
 
     label_map = {
         "Dataset708": "All together",
@@ -817,29 +853,29 @@ def save_feature_importance_plots(threshold_label, importance_df):
         ("Dice", dice_heatmap_df, dice_cbar_min, dice_cbar_max),
         ("F1", f1_heatmap_df, dice_cbar_min, dice_cbar_max),
     ):
-        figure, axis = plt.subplots(figsize=(6, 6))
+        figure, axis = plt.subplots(figsize=(8, 8))
         sns.heatmap(
             heatmap_df,
             annot=True,
             cmap="viridis",
             fmt=".3f",
-            linewidths=0.5,
+            linewidths=1.2,
+            annot_kws={"fontsize": 13, "fontweight": "bold"},
             vmin=cbar_min,
             vmax=cbar_max,
             cbar_kws={"label": f"{metric} drop"},
             ax=axis,
         )
-        axis.set_title(f"Channel importance heatmap — {metric} drop")
-        axis.set_ylabel("Zeroed channel")
-        axis.set_xlabel("Dataset")
+        axis.set_title(f"Channel importance heatmap — {metric} drop", fontsize=18, fontweight="bold")
+        axis.set_ylabel("Zeroed channel", fontsize=16, fontweight="bold")
+        axis.set_xlabel("Dataset", fontsize=16, fontweight="bold")
         figure.tight_layout()
         heatmap_path = os.path.join(
             images_dir,
             f"feature_importance_heatmap_{threshold_label}_{metric}.png",
         )
-        figure.savefig(heatmap_path, dpi=600, bbox_inches="tight")
+        save_figure(figure, heatmap_path)
         plt.close(figure)
-        print(f"Saved: {heatmap_path}")
 
 
 def main():
