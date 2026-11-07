@@ -258,14 +258,8 @@ Official BibTeX exported from Zenodo:
 
 ```bibtex
 @misc{nohel_2026_19708429,
-  author       = {Nohel, Michal and
-                  Valek, Vlastimil and
-                  Jakubicek, Roman and
-                  Dostál, Marek and
-                  Chmelik, Jiri},
-  title        = {Spinal-Multiple-Myeloma-
-                   SEG\_nnUNet\_models\_benchmarking
-                  },
+  author       = {Nohel, Michal and Valek, Vlastimil and Jakubicek, Roman and Dostál, Marek and Chmelik, Jiri},
+  title        = {Spinal-Multiple-Myeloma-SEG\_nnUNet\_models\_benchmarking},
   month        = oct,
   year         = 2026,
   publisher    = {Brno University of Technology},
