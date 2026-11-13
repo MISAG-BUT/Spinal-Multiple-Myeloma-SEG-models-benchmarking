@@ -19,20 +19,20 @@ import config  # noqa: E402
 
 
 plt.rcParams.update({
-    "font.size": 14,
+    "font.size": 19,
     "font.weight": "bold",
-    "axes.titlesize": 18,
+    "axes.titlesize": 23,
     "axes.titleweight": "bold",
-    "axes.labelsize": 16,
+    "axes.labelsize": 21,
     "axes.labelweight": "bold",
-    "xtick.labelsize": 13,
-    "ytick.labelsize": 13,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
     "xtick.major.width": 1.6,
     "ytick.major.width": 1.6,
     "axes.linewidth": 1.5,
     "lines.linewidth": 2.2,
-    "legend.fontsize": 13,
-    "legend.title_fontsize": 14,
+    "legend.fontsize": 18,
+    "legend.title_fontsize": 19,
 })
 
 
@@ -441,7 +441,7 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
             row.significance,
             ha="center",
             va="bottom",
-            fontsize=12,
+            fontsize=17,
             fontweight="bold",
             color="black",
             clip_on=False,
@@ -450,6 +450,18 @@ def draw_significance_brackets(axis, significance, model_ids, metric, x_offset, 
     if not intervals_by_level:
         return y_start
     return y_start + (len(intervals_by_level) - 1) * level_spacing + bracket_height + 0.025
+
+
+def fit_horizontal_labels(figure, axis):
+    """Keep horizontal labels when they fit; otherwise use the original tilt."""
+    figure.canvas.draw()
+    labels = axis.get_xticklabels()
+    boxes = [label.get_window_extent() for label in labels]
+    if any(left.x1 + 8 > right.x0 for left, right in zip(boxes, boxes[1:])):
+        for label in labels:
+            label.set_rotation(45)
+            label.set_ha("right")
+        figure.tight_layout()
 
 
 def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y_limits=None):
@@ -467,23 +479,25 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y
         draw_boxplot(axis, subset["Dice"], index + dice_offset, adjust_color(base_color, 1.45), rng)
         draw_boxplot(axis, subset["F1"], index + f1_offset, adjust_color(base_color, 0.65), rng)
 
-    axis.set_xlabel("Model", fontsize=16, fontweight="bold")
-    axis.set_ylabel("Dice / F1", fontsize=16, fontweight="bold")
+    axis.set_xlabel("Model", fontsize=21, fontweight="bold")
+    axis.set_ylabel("Dice / F1", fontsize=21, fontweight="bold")
     axis.set_xticks(range(len(model_ids)))
-    axis.set_xticklabels([DATASET_LABELS[dataset_id] for dataset_id in model_ids], rotation=45, ha="right", fontsize=13, fontweight="bold")
-    axis.tick_params(axis="y", labelsize=13, width=1.6)
+    horizontal_labels = output_filename.startswith("grouped_")
+    axis.set_xticklabels([DATASET_LABELS[dataset_id].replace("LOO w/o ", "LOO w/o\n") if horizontal_labels else DATASET_LABELS[dataset_id] for dataset_id in model_ids], rotation=0 if horizontal_labels else 45, ha="center" if horizontal_labels else "right", fontsize=18, fontweight="bold")
+    axis.tick_params(axis="y", labelsize=18, width=1.6)
     axis.set_xlim(-0.65, len(model_ids) - 0.35)
     axis.set_ylim(*(y_limits or (-0.02, 1.02)))
     axis.grid(axis="y", linestyle="--", alpha=0.3)
 
     if significance is not None:
+        marker_shift = 0.03 if output_filename.startswith("single_input_") else 0.0
         dice_top = draw_significance_brackets(
-            axis, significance, model_ids, "Dice", dice_offset, 1.05
+            axis, significance, model_ids, "Dice", dice_offset, 1.05 - marker_shift
         )
         f1_top = draw_significance_brackets(
             axis, significance, model_ids, "F1", f1_offset, dice_top + 0.04
         )
-        axis.set_ylim(-0.02, max(1.02, f1_top + 0.03))
+        axis.set_ylim(-0.02, max(1.02, f1_top + 0.03 + marker_shift))
 
     legend_handles = []
     legend_labels = []
@@ -499,21 +513,55 @@ def save_longi_dice_f1_plot(df, model_ids, output_filename, significance=None, y
             Patch(facecolor=adjust_color(base_color, 0.65), edgecolor="black"),
         ))
         legend_labels.append(group)
-    axis.legend(
+    if output_filename.startswith("single_input_"):
+        legend_location, legend_anchor, legend_columns = "lower left", (-0.015, 0.005), len(groups)
+    elif output_filename.startswith("models_"):
+        legend_location, legend_anchor, legend_columns = "lower left", (0.01, 0.02), 3
+    else:
+        legend_location, legend_anchor, legend_columns = "lower center", (0.5, 0.07), len(groups)
+    legend_title = "Dataset group (light: Dice, dark: F1)"
+    if output_filename.startswith(("grouped_", "leave_one_out_")):
+        legend_handles = [Patch(visible=False)] + legend_handles
+        legend_labels = [legend_title + ":"] + legend_labels
+        legend_title = None
+        legend_location, legend_anchor, legend_columns = "lower left", (0.01, 0.07), len(legend_handles)
+        if output_filename.startswith(("grouped_", "leave_one_out_")):
+            legend_anchor = (-0.015, 0.0)
+        if output_filename.startswith("grouped_"):
+            legend_anchor = (-0.015, 0.02)
+    legend_spacing = {}
+    if output_filename.startswith("single_input_"):
+        legend_handles = [Patch(visible=False)] + legend_handles
+        legend_labels = [legend_title + ":"] + legend_labels
+        legend_title = None
+        legend_columns = len(legend_handles)
+        legend_spacing = dict(borderaxespad=0, columnspacing=0.6)
+    if output_filename.startswith("models_"):
+        legend_columns = len(legend_handles)
+        legend_anchor = (0.02, 0.005)
+        legend_spacing = dict(borderaxespad=0, columnspacing=0.6)
+    if output_filename.startswith(("grouped_", "leave_one_out_")):
+        legend_spacing = dict(borderaxespad=0, columnspacing=0.6)
+    legend = axis.legend(
         handles=legend_handles,
         labels=legend_labels,
         handler_map={tuple: HandlerTuple(ndivide=None, pad=0.2)},
-        title="Dataset group\n(light: Dice, dark: F1)",
-        loc="upper left",
-        bbox_to_anchor=(1.0, 1.0),
+        title=legend_title,
+        loc=legend_location,
+        bbox_to_anchor=legend_anchor,
+        ncol=legend_columns,
         frameon=False,
-        fontsize=13,
-        title_fontsize=14,
-        handlelength=2.5,
-        handletextpad=0.5,
+        fontsize=20 if output_filename.startswith(("grouped_", "leave_one_out_")) else 18,
+        title_fontsize=19,
+        handlelength=1.8 if output_filename.startswith(("grouped_", "leave_one_out_")) else 2.5,
+        handletextpad=0.3 if output_filename.startswith(("grouped_", "leave_one_out_")) else 0.5,
         labelspacing=0.45,
+        **legend_spacing,
     )
-    figure.tight_layout(rect=[0, 0, 0.86, 1])
+    legend.set_alignment("left")
+    figure.tight_layout()
+    if horizontal_labels:
+        fit_horizontal_labels(figure, axis)
     output_path = os.path.join(OUTPUT_DIR, output_filename)
     save_figure(figure, output_path)
     plt.close(figure)
@@ -573,23 +621,23 @@ def save_loo_difference_plot(df, zero_tests=None):
                         textcoords="offset points",
                         ha="center",
                         va="bottom",
-                        fontsize=12,
+                        fontsize=17,
                         fontweight="bold",
                         color="#c62828",
                         clip_on=False,
                     )
 
-    axis.set_xlabel("LOO model", fontsize=16, fontweight="bold")
-    axis.set_ylabel("Score difference (LOO − All together)", fontsize=16, fontweight="bold")
+    axis.set_xlabel("LOO model", fontsize=21, fontweight="bold")
+    axis.set_ylabel("Score difference (LOO − All together)", fontsize=21, fontweight="bold")
     axis.set_xticks(range(len(loo_ids)))
     axis.set_xticklabels(
         [DATASET_LABELS[dataset_id] for dataset_id in loo_ids],
         rotation=45,
         ha="right",
-        fontsize=13,
+        fontsize=18,
         fontweight="bold",
     )
-    axis.tick_params(axis="y", labelsize=13, width=1.6)
+    axis.tick_params(axis="y", labelsize=18, width=1.6)
     axis.set_xlim(-0.65, len(loo_ids) - 0.35)
     value_range = max(plotted_values) - min(plotted_values) if plotted_values else 1.0
     lower = min(0.0, min(plotted_values)) if plotted_values else 0.0
@@ -600,17 +648,18 @@ def save_loo_difference_plot(df, zero_tests=None):
     axis.grid(axis="y", linestyle="--", alpha=0.3)
     axis.legend(
         handles=[
+            Patch(visible=False, label="Metric:"),
             Patch(facecolor=adjust_color(loo_color, 1.45), edgecolor="black", label="Dice"),
             Patch(facecolor=adjust_color(loo_color, 0.65), edgecolor="black", label="F1"),
         ],
-        title="Metric",
-        loc="upper left",
-        bbox_to_anchor=(1.0, 1.0),
+        loc="upper right",
+        ncol=3,
+        columnspacing=0.6,
         frameon=False,
-        fontsize=13,
-        title_fontsize=14,
+        fontsize=18,
+        title_fontsize=19,
     )
-    figure.tight_layout(rect=[0, 0, 0.86, 1])
+    figure.tight_layout()
     output_dir = os.path.join(OUTPUT_DIR, "loo_difference_from_gt")
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "loo_vs_all_together_Dice_F1_differences.png")
@@ -666,7 +715,7 @@ def save_lesion_size_threshold_plot(df):
                 metric,
                 ha="center",
                 va="bottom",
-                fontsize=14,
+                fontsize=19,
                 fontweight="bold",
             )
 
@@ -674,46 +723,41 @@ def save_lesion_size_threshold_plot(df):
     axis.set_xticks(model_centers)
     axis.set_xticklabels(
         [label.replace(" (", "\n(") for label in model_order],
-        fontsize=12,
+        fontsize=17,
         fontweight="bold",
     )
-    axis.set_xlabel("Model", fontsize=16, fontweight="bold")
-    axis.set_ylabel("Dice / F1", fontsize=16, fontweight="bold")
-    axis.set_title("Dice and F1 by lesion-size threshold", fontsize=18, fontweight="bold")
+    axis.set_xlabel("Model", fontsize=21, fontweight="bold")
+    axis.set_ylabel("Dice / F1", fontsize=21, fontweight="bold")
     axis.set_xlim(model_centers[0] - 0.62, model_centers[-1] + 0.62)
-    axis.set_ylim(0.2, 1.08)
+    axis.set_ylim(0.01, 1.1)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
-    axis.tick_params(axis="y", labelsize=13, width=1.6)
+    axis.tick_params(axis="y", labelsize=18, width=1.6)
 
     threshold_handles = [
         Patch(facecolor=threshold_colors[threshold], edgecolor="black", label=threshold_labels[threshold])
         for threshold in THRESHOLD_ORDER
     ]
-    threshold_legend = figure.legend(
-        handles=threshold_handles,
-        title="Lesion-size\nthreshold",
-        loc="upper left",
-        bbox_to_anchor=(0.645, 0.94),
+    legend = axis.legend(
+        handles=[Patch(visible=False)] + threshold_handles + [
+            Patch(facecolor="#999999", edgecolor="black", label="Dice"),
+            Patch(facecolor="#999999", edgecolor="black", hatch="//", label="F1"),
+        ],
+        labels=["Lesion-size threshold:"]
+        + [threshold_labels[threshold] for threshold in THRESHOLD_ORDER]
+        + ["Dice", "F1"],
+        loc="lower left",
+        bbox_to_anchor=(0.01, 0.005),
+        ncol=6,
         frameon=False,
-        fontsize=12,
-        title_fontsize=13,
+        fontsize=17,
+        borderaxespad=0,
+        columnspacing=0.6,
+        handlelength=1.8,
+        handletextpad=0.3,
     )
-    threshold_legend.set_alignment("left")
-    metric_handles = [
-        Patch(facecolor="#999999", edgecolor="black", label="Dice"),
-        Patch(facecolor="#999999", edgecolor="black", hatch="//", label="F1"),
-    ]
-    figure.legend(
-        handles=metric_handles,
-        title="Metric",
-        loc="upper left",
-        bbox_to_anchor=(0.645, 0.55),
-        frameon=False,
-        fontsize=12,
-        title_fontsize=13,
-    )
+    legend.set_alignment("left")
 
-    axis.set_position([0.08, 0.16, 0.56, 0.76])
+    figure.tight_layout()
     output_path = os.path.join(OUTPUT_DIR, "lesion_size_thresholds_Dice_F1_boxplot.png")
     save_figure(figure, output_path)
     plt.close(figure)
@@ -767,14 +811,30 @@ def save_iou_threshold_f1_plot():
             label=model_labels.get(model, model),
         )
 
-    axis.set_title("F1 score versus IoU threshold", fontsize=18, fontweight="bold")
-    axis.set_xlabel("IoU threshold", fontsize=16, fontweight="bold")
-    axis.set_ylabel("F1", fontsize=16, fontweight="bold")
-    axis.set_xticks(sorted(df["iou_threshold"].unique()))
+    axis.set_xlabel("IoU threshold", fontsize=21, fontweight="bold")
+    axis.set_ylabel("F1", fontsize=21, fontweight="bold")
+    axis.set_xticks(np.arange(0.1, 1.0, 0.1))
     axis.set_ylim(0, 1)
     axis.grid(axis="y", linestyle="--", alpha=0.3)
-    axis.legend(loc="best", frameon=False)
     figure.tight_layout()
+    model_label = axis.text(
+        0.02, 0.95, "Model:", transform=axis.transAxes,
+        fontsize=18, fontweight="bold", ha="left", va="center",
+    )
+    figure.canvas.draw()
+    label_box = model_label.get_window_extent()
+    legend_x = axis.transAxes.inverted().transform((label_box.x1 + 12, label_box.y0))[0]
+    legend = axis.legend(
+        loc="upper left", bbox_to_anchor=(legend_x, 0.98),
+        ncol=3, frameon=False, borderaxespad=0,
+        columnspacing=1.2, handletextpad=0.5,
+    )
+    legend.set_alignment("left")
+    figure.canvas.draw()
+    legend_box = legend.get_window_extent()
+    model_label.set_y(axis.transAxes.inverted().transform(
+        (legend_box.x0, (legend_box.y0 + legend_box.y1) / 2)
+    )[1])
     save_figure(figure, output_path)
     plt.close(figure)
 
@@ -797,9 +857,9 @@ def save_feature_importance_plots(threshold_label, importance_df):
             edgecolor="black",
             linewidth=1.5,
         )
-        axis.set_ylabel("Dice drop (importance)", fontsize=16, fontweight="bold")
-        axis.set_xlabel("Removed channel", fontsize=16, fontweight="bold")
-        axis.set_title(f"Channel importance ({threshold_label} — {dataset})", fontsize=18, fontweight="bold")
+        axis.set_ylabel("Dice drop (importance)", fontsize=21, fontweight="bold")
+        axis.set_xlabel("Removed channel", fontsize=21, fontweight="bold")
+        axis.set_title(f"Channel importance ({threshold_label} — {dataset})", fontsize=23, fontweight="bold")
         axis.tick_params(axis="x", rotation=45, width=1.6)
         figure.tight_layout()
         plot_path = os.path.join(
@@ -866,9 +926,20 @@ def save_feature_importance_plots(threshold_label, importance_df):
             cbar_kws={"label": f"{metric} drop"},
             ax=axis,
         )
-        axis.set_title(f"Channel importance heatmap — {metric} drop", fontsize=18, fontweight="bold")
-        axis.set_ylabel("Zeroed channel", fontsize=16, fontweight="bold")
-        axis.set_xlabel("Dataset", fontsize=16, fontweight="bold")
+        axis.set_title(f"Channel importance heatmap — {metric} drop", fontsize=23, fontweight="bold")
+        axis.set_ylabel("Zeroed channel", fontsize=21, fontweight="bold")
+        axis.set_xlabel("Dataset", fontsize=21, fontweight="bold")
+        if threshold_label == "all":
+            axis.set_title(f"{metric} drop", fontsize=18, fontweight="normal")
+            axis.set_ylabel("Zeroed channel", fontsize=16, fontweight="normal")
+            axis.set_xlabel("Dataset", fontsize=16, fontweight="normal")
+            axis.tick_params(axis="both", labelsize=14)
+            axis.set_xticklabels(axis.get_xticklabels(), rotation=0, ha="center")
+            colorbar = axis.collections[0].colorbar
+            colorbar.ax.tick_params(labelsize=14)
+            colorbar.set_label(f"{metric} drop", fontsize=16, fontweight="normal")
+            for label in axis.get_xticklabels() + axis.get_yticklabels() + colorbar.ax.get_yticklabels():
+                label.set_fontweight("normal")
         figure.tight_layout()
         heatmap_path = os.path.join(
             images_dir,
@@ -906,12 +977,13 @@ def main():
         patient_df,
         list(range(700, 709)),
         "leave_one_out_700_708_Dice_F1_boxplot.png",
+        y_limits=(0.3, 1.0),
     )
     save_longi_dice_f1_plot(
         patient_df,
         [708, 717, 718],
         "grouped_708_717_718_Dice_F1_boxplot.png",
-        y_limits=(0.4, 1.0),
+        y_limits=(0.3, 1.0),
     )
     save_loo_difference_plot(patient_df, loo_zero_tests)
     threshold_df = load_threshold_patient_rows()
